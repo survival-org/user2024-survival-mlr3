@@ -1,0 +1,53 @@
+---
+title: "Getting Started"
+format: html
+---
+
+## `{mlr3}` Basics
+
+- Understand how `{mlr3}` is structured
+- Access learners and (built-in) tasks
+- Perform simple train-predict-evaluate steps
+
+
+To get started, we load `{mlr3verse}`, which will load various packages from the `{mlr3}` ecosystem:
+
+```{r}
+library(mlr3verse)
+```
+
+`{mlr3}` ships with wrappers for many commonly used machine learning algorithms ("learners").  
+We can access the list of available learners using the `mlr_learners` dictionary:
+
+```{r}
+as.data.table(mlr_learners)
+
+lrn("classif.ranger")
+```
+
+There are also some built-in tasks, which we can access using the `mlr_tasks` dictionary:
+
+```{r}
+as.data.table(mlr_tasks)
+
+tsk("penguins_simple")
+```
+
+Tasks encapsulate a data source (typically a `data.table`) and additional information regarding which variables are considered features and target. Tasks can also specify additional properties such as stratification, which we will see later.
+
+### Example: Train-Predict-Evaluate
+
+Let's perform a simple train-predict-evaluate step using a built-in task and learner for a simple classification example:
+
+```{r}
+task = tsk("penguins_simple")
+learner = lrn("classif.ranger")
+
+splits = partition(task, ratio = 0.7)
+
+learner$train(task, row_ids = splits$train)
+preds = learner$predict(task, row_ids = splits$test)
+preds$score(msr("classif.ce"))
+```
+
+This code snippet trains a random forest model on the `penguins_simple` task (a simplified version of the `palmerpenguins` dataset, but without missing values) and evaluates the model's performance using the classification error metric.
