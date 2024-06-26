@@ -51,3 +51,36 @@ preds$score(msr("classif.ce"))
 ```
 
 This code snippet trains a random forest model on the `penguins_simple` task (a simplified version of the `palmerpenguins` dataset, but without missing values) and evaluates the model's performance using the classification error metric.
+
+## Survival mode: `{mlr3proba}`
+
+- Understand survival tasks and how they differ from regression/classification
+- Know how to conduct basic modeling with `{mlr3proba}`
+
+`{mlr3proba}` extends `{mlr3}` with survival analysis capabilities.
+As of now, the package is not on CRAN, but you can install it from GitHub or [r-universe](https://mlr-org.r-universe.dev/mlr3proba).
+
+We'll start by using the built-in `lung` dataset, which is a survival task with 9 features and 168 observations:
+
+```{r}
+library(mlr3proba)
+lung_task = tsk("lung")
+
+lung_task
+```
+
+Using the `autoplot()` function from `{ggplot2}`, we can visualize the task as a Kaplan-Meier curve:
+
+```{r}
+library(ggplot2)
+autoplot(lung_task) +
+  labs(title = "lung dataset: Kaplan-Meier curve")
+```
+
+```{r}
+learner = lrn("surv.coxph")
+learner$train(lung_task)
+
+learner$predict(lung_task)
+```
+
