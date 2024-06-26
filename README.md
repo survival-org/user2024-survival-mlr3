@@ -60,10 +60,10 @@ Install all packages with `{pak}` (`install.packages("pak")`):
 
 ``` r
 # CRAN packages first
-pak::pak(c("tidyverse", "mlr3verse", "paradox", "survival", "rpart", "glmnet", "ranger", "aorsf"))
+pak::pak(c("tidyverse", "mlr3verse", "survival", "rpart", "glmnet", "ranger", "aorsf"), upgrade = TRUE)
 
 # Non-CRAN packages from GitHub
-pak::pak(c("mlr-org/mlr3proba", "mlr-org/mlr3extralearners"))
+pak::pak(c("mlr-org/mlr3proba", "mlr-org/mlr3extralearners"), upgrade = TRUE)
 pak::pak("binderh/CoxBoost")
 ```
 
