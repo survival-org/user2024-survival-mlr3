@@ -1,15 +1,14 @@
 ---
-title: "useR! 2024 "
-author: "[John Zobolas](https://github.com/bblodfon), Lukas ()"
+title: "Intro to Machine Learning for Survival Analysis with mlr3"
+author: "[John Zobolas](https://github.com/bblodfon), [Lukas Burk](https://lukasburk.de/)"
 date: last-modified
-description: "cha cha"
-bibliography: references.bib
+description: "Tutorial for the useR! 2024 conference in Salzburg, Austria (8-11 July)"
 format:
   html:
     date: last-modified
     code-block-bg: true
     code-copy: true
-    code-fold: true
+    code-fold: show
     code-overflow: wrap
     code-block-border-left: true
     toc: true
@@ -23,8 +22,6 @@ execute:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
 ```
-
-# Getting Started {-}
 
 ## `{mlr3}` Basics {-}
 
@@ -44,7 +41,7 @@ library(mlr3verse)
 We can access the list of available learners using the `mlr_learners` dictionary:
 
 ```{r}
-as.data.table(mlr_learners)
+head(as.data.table(mlr_learners))
 
 lrn("classif.ranger")
 ```
@@ -52,14 +49,14 @@ lrn("classif.ranger")
 There are also some built-in tasks, which we can access using the `mlr_tasks` dictionary:
 
 ```{r}
-as.data.table(mlr_tasks)
+head(as.data.table(mlr_tasks))
 
 tsk("penguins_simple")
 ```
 
 Tasks encapsulate a data source (typically a `data.table`) and additional information regarding which variables are considered features and target. Tasks can also specify additional properties such as stratification, which we will see later.
 
-### Example: Train-Predict-Evaluate
+## Example: Train-Predict-Evaluate {-}
 
 Let's perform a simple train-predict-evaluate step using a built-in task and learner for a simple classification example:
 
@@ -67,10 +64,10 @@ Let's perform a simple train-predict-evaluate step using a built-in task and lea
 task = tsk("penguins_simple")
 learner = lrn("classif.ranger")
 
-splits = partition(task, ratio = 0.7)
+part = partition(task, ratio = 0.8) # by default stratifies on the target column
 
-learner$train(task, row_ids = splits$train)
-preds = learner$predict(task, row_ids = splits$test)
+learner$train(task, row_ids = part$train)
+preds = learner$predict(task, row_ids = part$test)
 preds$score(msr("classif.ce"))
 ```
 
@@ -78,35 +75,112 @@ This code snippet trains a random forest model on the `penguins_simple` task (a 
 
 ## Survival mode: `{mlr3proba}` {-}
 
-:::{.callout-tip title="title="Teaching Aims""}
+:::{.callout-tip title="Teaching Aims"}
 - Understand survival tasks and how they differ from regression/classification
 - Know how to conduct basic modeling with `{mlr3proba}`
 :::
 
+:::{.callout-note}
 `{mlr3proba}` extends `{mlr3}` with survival analysis capabilities.
 As of now, the package is not on CRAN, but you can install it [from GitHub](https://github.com/mlr-org/mlr3proba/?tab=readme-ov-file#installation) or [r-universe](https://mlr-org.r-universe.dev/mlr3proba).
+More info is also available on the respective [mlr3 book chapter](https://mlr3book.mlr-org.com/chapters/chapter13/beyond_regression_and_classification.html#sec-survival)
+:::
 
-We'll start by using the built-in `lung` dataset, which is a survival task with 9 features and 168 observations:
+### `{TaskSurv}` {-}
 
+We'll start by using the built-in `lung` dataset, which is a survival task with $7$ features and $168$ observations:
 ```{r}
 library(mlr3proba)
-lung_task = tsk("lung")
+task = tsk("lung")
 
-lung_task
+task
+```
+
+[See online reference](https://mlr3proba.mlr-org.com/reference/TaskSurv.html#methods) to useful methods offered by the main `TaskSurv` class.
+
+Target `Surv` object from `{survival}` (`+` is censoring):
+```{r}
+head(task$truth())
+```
+
+Proportion of censored observations:
+```{r}
+task$cens_prop()
+```
+
+Data barely satisfies proportional hazards assumption since the p-value from from the Grambsch-Therneau test > $0.05$:
+```{r}
+task$prop_haz()
 ```
 
 Using the `autoplot()` function from `{ggplot2}`, we can visualize the task as a Kaplan-Meier curve:
-
 ```{r}
 library(ggplot2)
-autoplot(lung_task) +
-  labs(title = "lung dataset: Kaplan-Meier curve")
+autoplot(task) +
+  labs(title = "Lung dataset: Kaplan-Meier curve")
 ```
 
+Tasks shipped with `{mlr3proba}`:
 ```{r}
-learner = lrn("surv.coxph")
-learner$train(lung_task)
-
-learner$predict(lung_task)
+as.data.table(mlr_tasks)[task_type == "surv", list(key, label, nrow, ncol)]
 ```
 
+:::{.callout-note}
+- Use [as_task_surv()](https://mlr3proba.mlr-org.com/reference/as_task_surv.html) to convert your own datasets to a `TaskSurv` object
+- Try `tsk("lung")$help()` to get more info about the dataset and pre-processing applied
+:::
+
+### Survival learners and prediction types {-}
+
+The classical Cox Proportional Hazards model:
+```{r}
+cox = lrn("surv.coxph")
+cox
+```
+
+Assess the fit object from `survival` package:
+```{r}
+part = partition(task, ratio = 0.8) # by default, stratification is on `status` variable
+cox$train(task, row_ids = part$train)
+
+cox$model
+```
+
+Predict on the test set:
+```{r}
+p = cox$predict(task, row_ids = part$test)
+p
+```
+
+:::{.callout-tip title="Prediction types in mlr3proba"}
+- `crank`: Continuous risk ranking.
+- `lp`: Linear predictor calculated as $\hat\beta * X_{test}$.
+- `distr`: Predicted survival distribution, either discrete or continuous.
+- `response` - Predicted survival time.
+:::
+
+For the cox model predictions, `crank = lp` (the higher, the more risk):
+```{r}
+p$lp
+```
+
+Survival prediction is a 2D `matrix` essentially => (test) observations x time points:
+```{r}
+p$data$distr[1:5, 1:5]
+```
+
+Via the [distr6](https://github.com/xoopR/distr6) interface, we can ask for survival probabilities:
+```{r}
+# first 4 patients in the test set, specific time points:
+p$distr[1:4]$survival(c(100, 500, 1200))
+```
+
+### Model evaluation {-}
+
+:::{.callout-tip title="Types of survival measures in mlr3proba"}
+To validate a prediction model systematically, the predictive performance of the model is commonly addressed by
+
+- **Discrimination**: the ability of the model to distinguish between low and high risk patients
+- **Calibration**: the agreement between the observed and predicted survival probabilities
+- **Overall performance**: the distance between the observed and predicted survival probabilities
+:::
