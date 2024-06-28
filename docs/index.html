@@ -125,14 +125,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#mlr3-basics" id="toc-mlr3-basics" class="nav-link active" data-scroll-target="#mlr3-basics"><code>{mlr3}</code> Basics</a></li>
+  <li><a href="#mlr3-basics" id="toc-mlr3-basics" class="nav-link active" data-scroll-target="#mlr3-basics"><code>mlr3</code>: Basics</a></li>
   <li><a href="#example-train-predict-evaluate" id="toc-example-train-predict-evaluate" class="nav-link" data-scroll-target="#example-train-predict-evaluate">Example: Train-Predict-Evaluate</a></li>
-  <li><a href="#survival-mode-mlr3proba" id="toc-survival-mode-mlr3proba" class="nav-link" data-scroll-target="#survival-mode-mlr3proba">Survival mode: <code>{mlr3proba}</code></a>
+  <li><a href="#mlr3proba-basics" id="toc-mlr3proba-basics" class="nav-link" data-scroll-target="#mlr3proba-basics"><code>mlr3proba</code>: Basics</a>
   <ul class="collapse">
-  <li><a href="#tasksurv" id="toc-tasksurv" class="nav-link" data-scroll-target="#tasksurv"><code>{TaskSurv}</code></a></li>
-  <li><a href="#survival-learners-and-prediction-types" id="toc-survival-learners-and-prediction-types" class="nav-link" data-scroll-target="#survival-learners-and-prediction-types">Survival learners and prediction types</a></li>
+  <li><a href="#survival-tasks" id="toc-survival-tasks" class="nav-link" data-scroll-target="#survival-tasks">Survival Tasks</a></li>
+  <li><a href="#coxph-learner" id="toc-coxph-learner" class="nav-link" data-scroll-target="#coxph-learner">CoxPH learner</a></li>
+  <li><a href="#prediction-types" id="toc-prediction-types" class="nav-link" data-scroll-target="#prediction-types">Prediction types</a></li>
   <li><a href="#model-evaluation" id="toc-model-evaluation" class="nav-link" data-scroll-target="#model-evaluation">Model evaluation</a></li>
+  <li><a href="#using-ml-survival-models" id="toc-using-ml-survival-models" class="nav-link" data-scroll-target="#using-ml-survival-models">Using ML survival models</a></li>
   </ul></li>
+  <li><a href="#benchmark-example-gex-clinical-data" id="toc-benchmark-example-gex-clinical-data" class="nav-link" data-scroll-target="#benchmark-example-gex-clinical-data">Benchmark example: GEX + clinical data</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/survival-org/user2024-survival-mlr3/blob/main/index.qmd" class="toc-action">View source</a></p></div></div></nav>
 </nav>
@@ -178,7 +181,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 <section id="mlr3-basics" class="level2 unnumbered">
-<h2 class="unnumbered anchored" data-anchor-id="mlr3-basics"><code>{mlr3}</code> Basics</h2>
+<h2 class="unnumbered anchored" data-anchor-id="mlr3-basics"><code>mlr3</code>: Basics</h2>
 <div class="callout callout-style-default callout-tip callout-titled" title="Teaching Aims">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -191,8 +194,7 @@ Teaching Aims
 <div class="callout-body-container callout-body">
 <ul>
 <li>Understand how <code>{mlr3}</code> is structured</li>
-<li>Access learners and (built-in) tasks</li>
-<li>Perform simple train-predict-evaluate steps</li>
+<li>Access <code>learner</code>s and (built-in) <code>task</code>s</li>
 </ul>
 </div>
 </div>
@@ -202,54 +204,29 @@ Teaching Aims
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr3verse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
-<pre><code>Loading required package: mlr3</code></pre>
-</div>
 </div>
 <p><code>{mlr3}</code> ships with wrappers for many commonly used machine learning algorithms (“learners”).<br>
 We can access the list of available learners using the <code>mlr_learners</code> dictionary:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">as.data.table</span>(mlr_learners))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(mlr_learners<span class="sc">$</span><span class="fu">keys</span>(), <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: 'surv.xgboost' will be deprecated in the future. Use
-'surv.xgboost.cox' or 'surv.xgboost.aft' learners instead.</code></pre>
-</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Key: &lt;key&gt;
-                  key                       label task_type
-               &lt;char&gt;                      &lt;char&gt;    &lt;char&gt;
-1: classif.AdaBoostM1           Adaptive Boosting   classif
-2:        classif.C50            Tree-based Model   classif
-3:        classif.IBk           Nearest Neighbour   classif
-4:        classif.J48            Tree-based Model   classif
-5:       classif.JRip Propositional Rule Learner.   classif
-6:        classif.LMT            Tree-based Model   classif
-                    feature_types                     packages
-                           &lt;list&gt;                       &lt;list&gt;
-1: integer,numeric,factor,ordered mlr3,mlr3extralearners,RWeka
-2:         numeric,factor,ordered   mlr3,mlr3extralearners,C50
-3: integer,numeric,factor,ordered mlr3,mlr3extralearners,RWeka
-4: integer,numeric,factor,ordered mlr3,mlr3extralearners,RWeka
-5: integer,numeric,factor,ordered mlr3,mlr3extralearners,RWeka
-6: integer,numeric,factor,ordered mlr3,mlr3extralearners,RWeka
-                             properties predict_types
-                                 &lt;list&gt;        &lt;list&gt;
-1:                  multiclass,twoclass response,prob
-2: missings,multiclass,twoclass,weights response,prob
-3:                  multiclass,twoclass response,prob
-4:         missings,multiclass,twoclass response,prob
-5:                  multiclass,twoclass response,prob
-6:                  multiclass,twoclass response,prob</code></pre>
+<pre><code> [1] "classif.multinom"    "regr.kknn"           "surv.ctree"         
+ [4] "classif.featureless" "regr.fnn"            "surv.cforest"       
+ [7] "classif.liblinear"   "classif.catboost"    "classif.ctree"      
+[10] "surv.mboost"        </code></pre>
 </div>
+</div>
+<p>One example:</p>
+<div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lrn</span>(<span class="st">"classif.ranger"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lrn</span>(<span class="st">"classif.ranger"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt;LearnerClassifRanger:classif.ranger&gt;: Random Forest
+<pre><code>&lt;LearnerClassifRanger:classif.ranger&gt;
 * Model: -
 * Parameters: num.threads=1
 * Packages: mlr3, mlr3learners, ranger
@@ -259,34 +236,42 @@ We can access the list of available learners using the <code>mlr_learners</code>
   twoclass, weights</code></pre>
 </div>
 </div>
-<p>There are also some built-in tasks, which we can access using the <code>mlr_tasks</code> dictionary:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use <code>lrn("classif.ranger")$help()</code> to view the help page, with links to documentation for parameters and other information about the wrapped learner.</p>
+</div>
+</div>
+<p>Built-in tasks can be accessed using the <code>mlr_tasks</code> dictionary:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">as.data.table</span>(mlr_tasks))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">as.data.table</span>(mlr_tasks)[, <span class="fu">list</span>(key, label, task_type, nrow, ncol, properties)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Key: &lt;key&gt;
-              key                   label task_type  nrow  ncol properties
-           &lt;char&gt;                  &lt;char&gt;    &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;list&gt;
-1:           actg                ACTG 320      surv  1151    13           
-2:   ames_housing        Ames House Sales      regr  2930    82           
-3:   bike_sharing     Bike Sharing Demand      regr 17379    14           
-4: boston_housing   Boston Housing Prices      regr   506    18           
-5:  breast_cancer Wisconsin Breast Cancer   classif   683    10   twoclass
-6:       faithful  Old Faithful Eruptions      dens   272     1           
-     lgl   int   dbl   chr   fct   ord   pxc
-   &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
-1:     0     3     4     0     4     0     0
-2:     0    33     1     0    47     0     0
-3:     2     4     4     1     2     0     0
-4:     0     3    12     0     2     0     0
-5:     0     0     0     0     0     9     0
-6:     0     0     1     0     0     0     0</code></pre>
+              key                     label task_type  nrow  ncol properties
+           &lt;char&gt;                    &lt;char&gt;    &lt;char&gt; &lt;int&gt; &lt;int&gt;     &lt;list&gt;
+1:   ames_housing          Ames House Sales      regr  2930    82           
+2:   bike_sharing       Bike Sharing Demand      regr 17379    14           
+3: boston_housing     Boston Housing Prices      regr   506    18           
+4:  breast_cancer   Wisconsin Breast Cancer   classif   683    10   twoclass
+5:  german_credit             German Credit   classif  1000    21   twoclass
+6:           ilpd Indian Liver Patient Data   classif   583    11   twoclass</code></pre>
 </div>
+</div>
+<p>One example:</p>
+<div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tsk</span>(<span class="st">"penguins_simple"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tsk</span>(<span class="st">"penguins_simple"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;TaskClassif:penguins&gt; (333 x 11): Simplified Palmer Penguins
@@ -298,32 +283,59 @@ We can access the list of available learners using the <code>mlr_learners</code>
   - int (3): body_mass, flipper_length, year</code></pre>
 </div>
 </div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
 <p>Tasks encapsulate a data source (typically a <code>data.table</code>) and additional information regarding which variables are considered features and target. Tasks can also specify additional properties such as stratification, which we will see later.</p>
+</div>
+</div>
 </section>
 <section id="example-train-predict-evaluate" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="example-train-predict-evaluate">Example: Train-Predict-Evaluate</h2>
-<p>Let’s perform a simple train-predict-evaluate step using a built-in task and learner for a simple classification example:</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Teaching Aims">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Teaching Aims
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Perform a simple train-predict-evaluate step</li>
+<li>Use built-in classification <code>task</code> and <code>learner</code></li>
+</ul>
+</div>
+</div>
+<p>The below code snippet trains a random forest model on the <code>penguins_simple</code> task (a simplified version of the <code>palmerpenguins</code> dataset, but without missing values) and evaluates the model’s performance using the classification error metric:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>task <span class="ot">=</span> <span class="fu">tsk</span>(<span class="st">"penguins_simple"</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>learner <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"classif.ranger"</span>)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>part <span class="ot">=</span> <span class="fu">partition</span>(task, <span class="at">ratio =</span> <span class="fl">0.8</span>) <span class="co"># by default stratifies on the target column</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>learner<span class="sc">$</span><span class="fu">train</span>(task, <span class="at">row_ids =</span> part<span class="sc">$</span>train)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>preds <span class="ot">=</span> learner<span class="sc">$</span><span class="fu">predict</span>(task, <span class="at">row_ids =</span> part<span class="sc">$</span>test)</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>preds<span class="sc">$</span><span class="fu">score</span>(<span class="fu">msr</span>(<span class="st">"classif.ce"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>task <span class="ot">=</span> <span class="fu">tsk</span>(<span class="st">"penguins_simple"</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>learner <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"classif.ranger"</span>, <span class="at">num.trees =</span> <span class="dv">10</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>part <span class="ot">=</span> <span class="fu">partition</span>(task, <span class="at">ratio =</span> <span class="fl">0.8</span>) <span class="co"># by default stratifies on the target column</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>learner<span class="sc">$</span><span class="fu">train</span>(task, <span class="at">row_ids =</span> part<span class="sc">$</span>train)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>preds <span class="ot">=</span> learner<span class="sc">$</span><span class="fu">predict</span>(task, <span class="at">row_ids =</span> part<span class="sc">$</span>test)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>preds<span class="sc">$</span><span class="fu">score</span>(<span class="fu">msr</span>(<span class="st">"classif.ce"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>classif.ce 
          0 </code></pre>
 </div>
 </div>
-<p>This code snippet trains a random forest model on the <code>penguins_simple</code> task (a simplified version of the <code>palmerpenguins</code> dataset, but without missing values) and evaluates the model’s performance using the classification error metric.</p>
 </section>
-<section id="survival-mode-mlr3proba" class="level2 unnumbered">
-<h2 class="unnumbered anchored" data-anchor-id="survival-mode-mlr3proba">Survival mode: <code>{mlr3proba}</code></h2>
+<section id="mlr3proba-basics" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="mlr3proba-basics"><code>mlr3proba</code>: Basics</h2>
 <div class="callout callout-style-default callout-tip callout-titled" title="Teaching Aims">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -337,32 +349,35 @@ Teaching Aims
 <ul>
 <li>Understand survival tasks and how they differ from regression/classification</li>
 <li>Know how to conduct basic modeling with <code>{mlr3proba}</code></li>
+<li>Prediction types</li>
+<li>Survival measures</li>
 </ul>
 </div>
 </div>
-<div class="callout callout-style-default callout-note callout-titled">
+<p><code>{mlr3proba}</code> extends <code>{mlr3}</code> with survival analysis capabilities.</p>
+<div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Note
+Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><code>{mlr3proba}</code> extends <code>{mlr3}</code> with survival analysis capabilities. As of now, the package is not on CRAN, but you can install it <a href="https://github.com/mlr-org/mlr3proba/?tab=readme-ov-file#installation">from GitHub</a> or <a href="https://mlr-org.r-universe.dev/mlr3proba">r-universe</a>. More info is also available on the respective <a href="https://mlr3book.mlr-org.com/chapters/chapter13/beyond_regression_and_classification.html#sec-survival">mlr3 book chapter</a></p>
+<p>As of now, <code>{mlr3proba}</code> is not on CRAN, but you can install it <a href="https://github.com/mlr-org/mlr3proba/?tab=readme-ov-file#installation">from GitHub</a> or <a href="https://mlr-org.r-universe.dev/mlr3proba">r-universe</a>. More info is also available on the respective <a href="https://mlr3book.mlr-org.com/chapters/chapter13/beyond_regression_and_classification.html#sec-survival">mlr3 book chapter</a>.</p>
 </div>
 </div>
-<section id="tasksurv" class="level3 unnumbered">
-<h3 class="unnumbered anchored" data-anchor-id="tasksurv"><code>{TaskSurv}</code></h3>
+<section id="survival-tasks" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="survival-tasks">Survival Tasks</h3>
 <p>We’ll start by using the built-in <code>lung</code> dataset, which is a survival task with <span class="math inline">7</span> features and <span class="math inline">168</span> observations:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr3proba)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>task <span class="ot">=</span> <span class="fu">tsk</span>(<span class="st">"lung"</span>)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>task</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr3proba)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>task <span class="ot">=</span> <span class="fu">tsk</span>(<span class="st">"lung"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>task</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;TaskSurv:lung&gt; (168 x 9): Lung Cancer
@@ -373,12 +388,12 @@ Note
   - fct (1): sex</code></pre>
 </div>
 </div>
-<p><a href="https://mlr3proba.mlr-org.com/reference/TaskSurv.html#methods">See online reference</a> to useful methods offered by the main <code>TaskSurv</code> class.</p>
-<p>Target <code>Surv</code> object from <code>{survival}</code> (<code>+</code> is censoring):</p>
+<p><a href="https://mlr3proba.mlr-org.com/reference/TaskSurv.html#methods">See online reference</a> to useful methods offered by the main <code>TaskSurv</code> class. Some examples:</p>
+<p>Target <code>Surv</code> object from <code>{survival}</code> (<code>+</code> denotes censored observation):</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(task<span class="sc">$</span><span class="fu">truth</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(task<span class="sc">$</span><span class="fu">truth</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]  455   210  1022+  310   361   218 </code></pre>
@@ -388,29 +403,29 @@ Note
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>task<span class="sc">$</span><span class="fu">cens_prop</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>task<span class="sc">$</span><span class="fu">cens_prop</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.2797619</code></pre>
 </div>
 </div>
-<p>Data barely satisfies proportional hazards assumption since the p-value from from the Grambsch-Therneau test &gt; <span class="math inline">0.05</span>:</p>
+<p>Does the data satisfy the <strong>proportional hazards</strong> assumption? Get the p-value from the Grambsch-Therneau test:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>task<span class="sc">$</span><span class="fu">prop_haz</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>task<span class="sc">$</span><span class="fu">prop_haz</span>() <span class="co"># barely, p &gt; 0.05 =&gt; PH</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.0608371</code></pre>
 </div>
 </div>
-<p>Using the <code>autoplot()</code> function from <code>{ggplot2}</code>, we can visualize the task as a Kaplan-Meier curve:</p>
+<p>Using the <code>autoplot()</code> function from <code>{ggplot2}</code>, we get the Kaplan-Meier curve:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(task) <span class="sc">+</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Lung dataset: Kaplan-Meier curve"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(task) <span class="sc">+</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Lung dataset: Kaplan-Meier curve"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>Registered S3 method overwritten by 'GGally':
@@ -418,14 +433,14 @@ Note
   +.gg   ggplot2</code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Tasks shipped with <code>{mlr3proba}</code>:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as.data.table</span>(mlr_tasks)[task_type <span class="sc">==</span> <span class="st">"surv"</span>, <span class="fu">list</span>(key, label, nrow, ncol)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as.data.table</span>(mlr_tasks)[task_type <span class="sc">==</span> <span class="st">"surv"</span>, <span class="fu">list</span>(key, label, nrow, ncol)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Key: &lt;key&gt;
@@ -461,14 +476,14 @@ Note
 </div>
 </div>
 </section>
-<section id="survival-learners-and-prediction-types" class="level3 unnumbered">
-<h3 class="unnumbered anchored" data-anchor-id="survival-learners-and-prediction-types">Survival learners and prediction types</h3>
+<section id="coxph-learner" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="coxph-learner">CoxPH learner</h3>
 <p>The classical Cox Proportional Hazards model:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>cox <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.coxph"</span>)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>cox</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>cox <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.coxph"</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>cox</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;LearnerSurvCoxPH:surv.coxph&gt;: Cox Proportional Hazards
@@ -480,50 +495,53 @@ Note
 * Properties: weights</code></pre>
 </div>
 </div>
-<p>Assess the fit object from <code>survival</code> package:</p>
+<p>Train the cox model and access the fit object from the <code>{survival}</code> package:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>part <span class="ot">=</span> <span class="fu">partition</span>(task, <span class="at">ratio =</span> <span class="fl">0.8</span>) <span class="co"># by default, stratification is on `status` variable</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>cox<span class="sc">$</span><span class="fu">train</span>(task, <span class="at">row_ids =</span> part<span class="sc">$</span>train)</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>cox<span class="sc">$</span>model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>part <span class="ot">=</span> <span class="fu">partition</span>(task, <span class="at">ratio =</span> <span class="fl">0.8</span>) <span class="co"># by default, stratification is on `status` variable</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>cox<span class="sc">$</span><span class="fu">train</span>(task, <span class="at">row_ids =</span> part<span class="sc">$</span>train)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>cox<span class="sc">$</span>model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Call:
 survival::coxph(formula = task$formula(), data = task$data(), 
     x = TRUE)
 
-                coef  exp(coef)   se(coef)      z      p
-age        1.552e-02  1.016e+00  1.231e-02  1.261 0.2074
-meal.cal   9.912e-05  1.000e+00  2.836e-04  0.349 0.7267
-pat.karno -1.988e-02  9.803e-01  9.170e-03 -2.167 0.0302
-ph.ecog    5.202e-01  1.682e+00  2.451e-01  2.122 0.0338
-ph.karno   2.724e-02  1.028e+00  1.251e-02  2.178 0.0294
-sexm       4.380e-01  1.550e+00  2.324e-01  1.885 0.0595
-wt.loss   -1.484e-02  9.853e-01  8.606e-03 -1.725 0.0846
+                coef  exp(coef)   se(coef)      z        p
+age        1.289e-02  1.013e+00  1.259e-02  1.024 0.305800
+meal.cal  -8.302e-05  9.999e-01  2.869e-04 -0.289 0.772319
+pat.karno -7.476e-03  9.926e-01  9.091e-03 -0.822 0.410844
+ph.ecog    9.047e-01  2.471e+00  2.615e-01  3.460 0.000539
+ph.karno   2.841e-02  1.029e+00  1.256e-02  2.261 0.023754
+sexm       7.011e-01  2.016e+00  2.251e-01  3.114 0.001843
+wt.loss   -1.258e-02  9.875e-01  8.715e-03 -1.444 0.148728
 
-Likelihood ratio test=19.73  on 7 df, p=0.006192
+Likelihood ratio test=26.97  on 7 df, p=0.0003374
 n= 135, number of events= 97 </code></pre>
 </div>
 </div>
-<p>Predict on the test set:</p>
+</section>
+<section id="prediction-types" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="prediction-types">Prediction types</h3>
+<p>Let’s predict using the trained cox model on the test set (output is a <a href="https://mlr3proba.mlr-org.com/reference/PredictionSurv.html">PredictionSurv</a> object):</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">=</span> cox<span class="sc">$</span><span class="fu">predict</span>(task, <span class="at">row_ids =</span> part<span class="sc">$</span>test)</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">=</span> cox<span class="sc">$</span><span class="fu">predict</span>(task, <span class="at">row_ids =</span> part<span class="sc">$</span>test)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;PredictionSurv&gt; for 33 observations:
-    row_ids time status      crank         lp     distr
-          7  166   TRUE 0.41775977 0.41775977 &lt;list[1]&gt;
-          8  170   TRUE 0.08765278 0.08765278 &lt;list[1]&gt;
-         13  301   TRUE 0.39131316 0.39131316 &lt;list[1]&gt;
----                                                    
-        163  197  FALSE 0.46225230 0.46225230 &lt;list[1]&gt;
-        164  203  FALSE 0.06891430 0.06891430 &lt;list[1]&gt;
-        166  105  FALSE 0.42984030 0.42984030 &lt;list[1]&gt;</code></pre>
+    row_ids time status       crank          lp     distr
+          1  455   TRUE -0.02981212 -0.02981212 &lt;list[1]&gt;
+          6  218   TRUE  0.20870613  0.20870613 &lt;list[1]&gt;
+         10  613   TRUE  1.08385929  1.08385929 &lt;list[1]&gt;
+---                                                      
+        154  235  FALSE -0.25508919 -0.25508919 &lt;list[1]&gt;
+        162  175  FALSE -0.99021501 -0.99021501 &lt;list[1]&gt;
+        163  197  FALSE  0.71869698  0.71869698 &lt;list[1]&gt;</code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled" title="Prediction types in mlr3proba">
@@ -537,87 +555,279 @@ Prediction types in mlr3proba
 </div>
 <div class="callout-body-container callout-body">
 <ul>
-<li><code>crank</code>: Continuous risk ranking.</li>
-<li><code>lp</code>: Linear predictor calculated as <span class="math inline">\hat\beta * X_{test}</span>.</li>
-<li><code>distr</code>: Predicted survival distribution, either discrete or continuous.</li>
-<li><code>response</code> - Predicted survival time.</li>
+<li><code>crank</code>: Continuous risk ranking</li>
+<li><code>lp</code>: Linear predictor calculated as <span class="math inline">\hat\beta * X_{test}</span></li>
+<li><code>distr</code>: Predicted survival distribution, either discrete or continuous</li>
+<li><code>response</code>: Predicted survival time</li>
 </ul>
 </div>
 </div>
-<p>For the cox model predictions, <code>crank = lp</code> (the higher, the more risk):</p>
+<p>For the cox model, <code>crank = lp</code> (the higher, the more risk):</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span>lp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span>lp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>           1            2            3            4            5            6 
- 0.417759769  0.087652779  0.391313156  1.034866097  0.596408051  0.480831239 
-           7            8            9           10           11           12 
- 0.599490396 -0.148474343  0.008913081  0.444216265 -0.189336539  0.125495556 
-          13           14           15           16           17           18 
- 0.206686156  0.922860655  0.678035625  0.876450956  0.416125878 -0.047132064 
-          19           20           21           22           23           24 
- 1.113317101  0.395106744 -0.700274358  1.201388719  1.550559735  0.594819154 
-          25           26           27           28           29           30 
--0.355297841  0.065359581  0.164590590  0.326423519  0.497676683  0.816534965 
-          31           32           33 
- 0.462252302  0.068914299  0.429840305 </code></pre>
+<pre><code>          1           2           3           4           5           6 
+-0.02981212  0.20870613  1.08385929  0.64412898  1.95694166  1.29258294 
+          7           8           9          10          11          12 
+ 0.98118477  0.50306284  0.28943104  0.01861849  0.17463572 -0.16547567 
+         13          14          15          16          17          18 
+ 0.05779670  0.69083172  0.88189677  0.29579355  0.96685391  1.18925249 
+         19          20          21          22          23          24 
+ 1.57195467  1.07787218  1.01452642  0.42097551  1.06133443  1.10591812 
+         25          26          27          28          29          30 
+ 0.40184129  0.90670656 -0.58224140  0.79403675  0.22297187  0.32272039 
+         31          32          33 
+-0.25508919 -0.99021501  0.71869698 </code></pre>
 </div>
 </div>
-<p>Survival prediction is a 2D <code>matrix</code> essentially =&gt; (test) observations x time points:</p>
+<p>Survival prediction is a 2D <code>matrix</code> essentially, with dimensions: observations x time points:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span>data<span class="sc">$</span>distr[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span>data<span class="sc">$</span>distr[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>          5        11        12        13        15
-1 0.9924684 0.9849541 0.9774271 0.9698270 0.9621924
-2 0.9945802 0.9891613 0.9837215 0.9782170 0.9726753
-3 0.9926643 0.9853439 0.9780097 0.9706028 0.9631608
-4 0.9860847 0.9722908 0.9585634 0.9447939 0.9310544
-5 0.9910019 0.9820377 0.9730718 0.9640325 0.9549661</code></pre>
+1 0.9960952 0.9921929 0.9882408 0.9842226 0.9801466
+2 0.9950460 0.9901004 0.9850969 0.9800154 0.9748665
+3 0.9881552 0.9764127 0.9646160 0.9527207 0.9407553
+4 0.9923533 0.9847403 0.9770594 0.9692804 0.9614206
+5 0.9718741 0.9444511 0.9173608 0.8905079 0.8639642</code></pre>
 </div>
 </div>
-<p>Via the <a href="https://github.com/xoopR/distr6">distr6</a> interface, we can ask for survival probabilities:</p>
+<p>Users should use the <a href="https://github.com/xoopR/distr6">distr6</a> interface to access this prediction type, which allows us to retrieve survival probabilities (or hazards) for any time point of interest:</p>
 <div class="cell">
 <details open="">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first 4 patients in the test set, specific time points:</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span>distr[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]<span class="sc">$</span><span class="fu">survival</span>(<span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">500</span>, <span class="dv">1200</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first 4 patients in the test set, specific time points:</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span>distr[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]<span class="sc">$</span><span class="fu">survival</span>(<span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">500</span>, <span class="dv">1200</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>           [,1]       [,2]      [,3]         [,4]
-100  0.84614207 0.88683503 0.8498397 0.7336890284
-500  0.22419865 0.34135368 0.2331210 0.0625693217
-1200 0.02147176 0.06322201 0.0237359 0.0008091368</code></pre>
+<pre><code>          [,1]       [,2]        [,3]       [,4]
+100  0.9014317 0.87658337 0.729032803 0.81579356
+500  0.4645821 0.37790283 0.096835009 0.22222443
+1200 0.1600068 0.09766965 0.003768671 0.02745085</code></pre>
 </div>
 </div>
 </section>
 <section id="model-evaluation" class="level3 unnumbered">
 <h3 class="unnumbered anchored" data-anchor-id="model-evaluation">Model evaluation</h3>
-<div class="callout callout-style-default callout-tip callout-titled" title="Types of survival measures in mlr3proba">
+<div class="callout callout-style-default callout-tip callout-titled" title="Model validation">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Types of survival measures in mlr3proba
+Model validation
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>To validate a prediction model systematically, the predictive performance of the model is commonly addressed by</p>
-<ul>
+<p>Validation of a survival model can be done by assessing:</p>
+<ol type="1">
 <li><strong>Discrimination</strong>: the ability of the model to distinguish between low and high risk patients</li>
 <li><strong>Calibration</strong>: the agreement between the observed and predicted survival probabilities</li>
 <li><strong>Overall performance</strong>: the distance between the observed and predicted survival probabilities</li>
+</ol>
+</div>
+</div>
+<p>Many measures included in <code>mlr3proba</code>:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>mlr_measures<span class="sc">$</span><span class="fu">keys</span>(<span class="at">pattern =</span> <span class="st">"surv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "surv.brier"         "surv.calib_alpha"   "surv.calib_beta"   
+ [4] "surv.chambless_auc" "surv.cindex"        "surv.dcalib"       
+ [7] "surv.graf"          "surv.hung_auc"      "surv.intlogloss"   
+[10] "surv.logloss"       "surv.mae"           "surv.mse"          
+[13] "surv.nagelk_r2"     "surv.oquigley_r2"   "surv.rcll"         
+[16] "surv.rmse"          "surv.schmid"        "surv.song_auc"     
+[19] "surv.song_tnr"      "surv.song_tpr"      "surv.uno_auc"      
+[22] "surv.uno_tnr"       "surv.uno_tpr"       "surv.xu_r2"        </code></pre>
+</div>
+</div>
+<p>Most commonly used metrics are for assessing discrimination, such as <strong>Harrell’s C-index</strong>, <strong>Uno’s C-index</strong> and the <strong>(time-dependent) AUC</strong>:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>harrell_c <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.cindex"</span>, <span class="at">id =</span> <span class="st">"surv.cindex.harrell"</span>)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>uno_c <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.cindex"</span>, <span class="at">weight_meth =</span> <span class="st">"G2"</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>uno_auci <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.uno_auc"</span>, <span class="at">integrated =</span> <span class="cn">TRUE</span>) <span class="co"># across all times in the test set</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>uno_auc <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.uno_auc"</span>, <span class="at">integrated =</span> <span class="cn">FALSE</span>, <span class="at">times =</span> <span class="dv">10</span>) <span class="co"># at a specific time-point of interest</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>harrell_c</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;MeasureSurvCindex:surv.cindex.harrell&gt;
+* Packages: mlr3, mlr3proba
+* Range: [0, 1]
+* Minimize: FALSE
+* Average: macro
+* Parameters: weight_meth=I, tiex=0.5, eps=0.001
+* Properties: -
+* Predict type: crank
+* Return type: Score</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>uno_auc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;MeasureSurvUnoAUC:surv.uno_auc&gt;
+* Packages: mlr3, mlr3proba, survAUC
+* Range: [0, 1]
+* Minimize: FALSE
+* Average: macro
+* Parameters: integrated=FALSE, times=10
+* Properties: requires_task, requires_train_set
+* Predict type: lp
+* Return type: Score</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Not all measures are applicable to all models - <strong>prediction type</strong> matters!</li>
+<li>Most discrimination metrics use the <code>crank</code> or <code>lp</code> prediction</li>
 </ul>
 </div>
 </div>
-
-
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span><span class="fu">score</span>(harrell_c)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>surv.cindex.harrell 
+          0.6458333 </code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span><span class="fu">score</span>(uno_c, <span class="at">task =</span> task, <span class="at">train_set =</span> part<span class="sc">$</span>train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>surv.cindex 
+  0.5906947 </code></pre>
+</div>
+</div>
+<p>Calibration is traditionally performed graphically via calibration plots:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(p, <span class="at">type =</span> <span class="st">"calib"</span>, <span class="at">task =</span> task, <span class="at">row_ids =</span> part<span class="sc">$</span>test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>But there exists also calibration metrics, e.g.&nbsp;<strong>D-Calibration</strong>:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>dcal <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.dcalib"</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>dcal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;MeasureSurvDCalibration:surv.dcalib&gt;
+* Packages: mlr3, mlr3proba
+* Range: [0, Inf]
+* Minimize: TRUE
+* Average: macro
+* Parameters: B=10, chisq=FALSE, truncate=Inf
+* Properties: -
+* Predict type: distr
+* Return type: Score</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span><span class="fu">score</span>(dcal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>surv.dcalib 
+   7.117245 </code></pre>
+</div>
+</div>
+<p>Overall survival prediction performance can be assessed by scoring rules such as the <strong>Integrated Survival Brier Score</strong> (ISBS) and the <strong>Right-censored Log-Loss</strong> (RCLL) among others:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>rcll <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.rcll"</span>)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>rcll</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;MeasureSurvRCLL:surv.rcll&gt;
+* Packages: mlr3, mlr3proba, distr6
+* Range: [0, Inf]
+* Minimize: TRUE
+* Average: macro
+* Parameters: eps=1e-15, se=FALSE, ERV=FALSE, na.rm=TRUE
+* Properties: -
+* Predict type: distr
+* Return type: Score</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span><span class="fu">score</span>(rcll)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>surv.rcll 
+ 22.50585 </code></pre>
+</div>
+</div>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>ibrier <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.brier"</span>, <span class="at">proper =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>ibrier</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;MeasureSurvGraf:surv.graf&gt;
+* Packages: mlr3, mlr3proba
+* Range: [0, Inf]
+* Minimize: TRUE
+* Average: macro
+* Parameters: integrated=TRUE, method=2, se=FALSE, proper=TRUE,
+  eps=0.001, ERV=FALSE
+* Properties: -
+* Predict type: distr
+* Return type: Score</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>p<span class="sc">$</span><span class="fu">score</span>(ibrier, <span class="at">task =</span> task, <span class="at">train_set =</span> part<span class="sc">$</span>train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>surv.graf 
+0.1646881 </code></pre>
+</div>
+</div>
 </section>
+<section id="using-ml-survival-models" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="using-ml-survival-models">Using ML survival models</h3>
+<p>Mention from <code>mlr3extralearners</code>: cv.glmnet, aorsf, ranger, CoxBoost</p>
+</section>
+</section>
+<section id="benchmark-example-gex-clinical-data" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="benchmark-example-gex-clinical-data">Benchmark example: GEX + clinical data</h2>
+<ul>
+<li>From the tutorial (https://ocbe-uio.github.io/survomics/survomics.html#workflow)</li>
+<li>data =&gt; https://github.com/ocbe-uio/survomics/blob/main/data.rds</li>
+<li>Benchmark + posthoc analysis of results with <code>mlr3benchmark</code></li>
+</ul>
+
+
 </section>
 
 </main> <!-- /main -->
