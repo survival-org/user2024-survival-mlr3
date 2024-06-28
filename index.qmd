@@ -1,14 +1,38 @@
 ---
-title: "Getting Started"
-format: html
+title: "useR! 2024 "
+author: "[John Zobolas](https://github.com/bblodfon), Lukas ()"
+date: last-modified
+description: "cha cha"
+bibliography: references.bib
+format:
+  html:
+    date: last-modified
+    code-block-bg: true
+    code-copy: true
+    code-fold: true
+    code-overflow: wrap
+    code-block-border-left: true
+    toc: true
+    toc-location: left
+    html-math-method: katex
+    page-layout: full
+execute:
+  freeze: true
 ---
 
-## `{mlr3}` Basics
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+```
 
+# Getting Started {-}
+
+## `{mlr3}` Basics {-}
+
+:::{.callout-tip title="Teaching Aims"}
 - Understand how `{mlr3}` is structured
 - Access learners and (built-in) tasks
 - Perform simple train-predict-evaluate steps
-
+:::
 
 To get started, we load `{mlr3verse}`, which will load various packages from the `{mlr3}` ecosystem:
 
@@ -52,13 +76,15 @@ preds$score(msr("classif.ce"))
 
 This code snippet trains a random forest model on the `penguins_simple` task (a simplified version of the `palmerpenguins` dataset, but without missing values) and evaluates the model's performance using the classification error metric.
 
-## Survival mode: `{mlr3proba}`
+## Survival mode: `{mlr3proba}` {-}
 
+:::{.callout-tip title="title="Teaching Aims""}
 - Understand survival tasks and how they differ from regression/classification
 - Know how to conduct basic modeling with `{mlr3proba}`
+:::
 
 `{mlr3proba}` extends `{mlr3}` with survival analysis capabilities.
-As of now, the package is not on CRAN, but you can install it from GitHub or [r-universe](https://mlr-org.r-universe.dev/mlr3proba).
+As of now, the package is not on CRAN, but you can install it [from GitHub](https://github.com/mlr-org/mlr3proba/?tab=readme-ov-file#installation) or [r-universe](https://mlr-org.r-universe.dev/mlr3proba).
 
 We'll start by using the built-in `lung` dataset, which is a survival task with 9 features and 168 observations:
 
