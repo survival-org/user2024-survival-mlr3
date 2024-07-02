@@ -156,6 +156,7 @@ cox
 
 Train the cox model and access the fit object from the `{survival}` package:
 ```{r}
+set.seed(42)
 part = partition(task, ratio = 0.8) # by default, stratification is on `status` variable
 cox$train(task, row_ids = part$train)
 
@@ -196,6 +197,12 @@ Users should use the [distr6](https://github.com/xoopR/distr6) interface to acce
 ```{r}
 # first 4 patients in the test set, specific time points:
 p$distr[1:4]$survival(c(100, 500, 1200))
+```
+
+Visualization of predicted survival curves for $3$ test patients:
+```{r}
+p2 = p$clone()$filter(row_ids = c(1,24,40))
+autoplot(p2, type = "preds")
 ```
 
 ### Model evaluation {-}
