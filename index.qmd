@@ -162,6 +162,11 @@ cox$train(task, row_ids = part$train)
 cox$model
 ```
 
+Visual output of the model, using the latest version from Github of `{mlr3viz}`:
+```{r}
+autoplot(cox)
+```
+
 ### Prediction types {-}
 
 Let's predict using the trained cox model on the test set (output is a [PredictionSurv](https://mlr3proba.mlr-org.com/reference/PredictionSurv.html) object):
