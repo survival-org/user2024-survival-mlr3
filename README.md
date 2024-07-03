@@ -44,6 +44,7 @@ the latest versions:
 
 - `tidyverse` (CRAN)
 - `mlr3verse` (CRAN) (incl. `paradox >= 1.0.0`)
+- `mlr3viz` (GitHub `mlr-org/mlr3viz`, latest version for new features!)
 - `survival` (CRAN)
 - `rpart` (CRAN)
 - `mlr3proba` (GitHub `mlr-org/mlr3proba`)

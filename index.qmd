@@ -57,6 +57,7 @@ head(as.data.table(mlr_tasks)[, list(key, label, task_type, nrow, ncol, properti
 ```
 
 One example:
+
 ```{r}
 tsk("penguins_simple")
 ```
@@ -74,6 +75,7 @@ Tasks can also specify additional properties such as stratification, which we wi
 :::
 
 The below code snippet trains a random forest model on the `penguins_simple` task (a simplified version of the `palmerpenguins` dataset, but without missing values) and evaluates the model's performance using the classification error metric:
+
 ```{r}
 task = tsk("penguins_simple")
 learner = lrn("classif.ranger", num.trees = 10)
@@ -104,6 +106,7 @@ More info is also available on the respective [mlr3 book chapter](https://mlr3bo
 ### Survival Tasks {-}
 
 We'll start by using the built-in `lung` dataset, which is a survival task with $7$ features and $168$ observations:
+
 ```{r}
 library(mlr3proba)
 task = tsk("lung")
@@ -115,21 +118,25 @@ task
 Some examples:
 
 Target `Surv` object from `{survival}` (`+` denotes censored observation):
+
 ```{r}
 head(task$truth())
 ```
 
 Proportion of censored observations:
+
 ```{r}
 task$cens_prop()
 ```
 
-Does the data satisfy the **proportional hazards** assumption? Get the p-value from the Grambsch-Therneau test:
+Does the data satisfy the **proportional hazards** assumption? Get the p-value from the Grambsch-Therneau test (see `?survival::cox.zph`):
+
 ```{r}
 task$prop_haz() # barely, p > 0.05 => PH
 ```
 
 Using the `autoplot()` function from `{ggplot2}`, we get the Kaplan-Meier curve:
+
 ```{r}
 library(ggplot2)
 autoplot(task) +
@@ -137,6 +144,7 @@ autoplot(task) +
 ```
 
 Tasks shipped with `{mlr3proba}`:
+
 ```{r}
 as.data.table(mlr_tasks)[task_type == "surv", list(key, label, nrow, ncol)]
 ```
@@ -164,6 +172,7 @@ cox$model
 ```
 
 Visual output of the model, using the latest version from Github of `{mlr3viz}`:
+
 ```{r}
 autoplot(cox)
 ```
@@ -171,6 +180,7 @@ autoplot(cox)
 ### Prediction types {-}
 
 Let's predict using the trained cox model on the test set (output is a [PredictionSurv](https://mlr3proba.mlr-org.com/reference/PredictionSurv.html) object):
+
 ```{r}
 p = cox$predict(task, row_ids = part$test)
 p
@@ -184,22 +194,26 @@ p
 :::
 
 For the cox model, `crank = lp` (the higher, the more risk):
+
 ```{r}
 p$lp
 ```
 
-Survival prediction is a 2D `matrix` essentially, with dimensions: observations x time points:
+Survival prediction is a 2D `matrix` essentially, with dimensions: *observations* x *time points*:
+
 ```{r}
 p$data$distr[1:5, 1:5]
 ```
 
 Users should use the [distr6](https://github.com/xoopR/distr6) interface to access this prediction type, which allows us to retrieve survival probabilities (or hazards) for any time point of interest:
+
 ```{r}
 # first 4 patients in the test set, specific time points:
 p$distr[1:4]$survival(c(100, 500, 1200))
 ```
 
 Visualization of predicted survival curves for $3$ test patients:
+
 ```{r}
 p2 = p$clone()$filter(row_ids = c(1,24,40))
 autoplot(p2, type = "preds")
@@ -223,7 +237,7 @@ mlr_measures$keys(pattern = "surv")
 Most commonly used metrics are for assessing discrimination, such as **Harrell's C-index**, **Uno's C-index** and the **(time-dependent) AUC**:
 ```{r}
 harrell_c = msr("surv.cindex", id = "surv.cindex.harrell")
-uno_c = msr("surv.cindex", weight_meth = "G2")
+uno_c = msr("surv.cindex", weight_meth = "G2", id = "surv.cindex.uno")
 uno_auci = msr("surv.uno_auc", integrated = TRUE) # across all times in the test set
 uno_auc = msr("surv.uno_auc", integrated = FALSE, times = 10) # at a specific time-point of interest
 
@@ -242,7 +256,7 @@ p$score(uno_c, task = task, train_set = part$train)
 ```
 
 Calibration is traditionally performed graphically via calibration plots:
-```{r}
+```{r calib-plot-}
 autoplot(p, type = "calib", task = task, row_ids = part$test)
 ```
 
