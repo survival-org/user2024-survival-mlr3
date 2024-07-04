@@ -6,3 +6,14 @@ website:
   repo-url: https://github.com/survival-org/user2024-survival-mlr3/
   repo-branch: main
   repo-actions: source
+  navbar:
+    left:
+      - href: index.qmd
+        text: Course
+    right:
+      - href: https://github.com/survival-org/user2024-survival-mlr3
+        icon: github
+
+execute:
+  cache: true
+  freeze: true
