@@ -46,6 +46,7 @@ the latest versions:
 - `mlr3verse` (CRAN) (incl. `paradox >= 1.0.0`)
 - `mlr3viz` (GitHub `mlr-org/mlr3viz`, latest version for new features!)
 - `survival` (CRAN)
+- `survminer` (CRAN)
 - `rpart` (CRAN)
 - `mlr3proba` (GitHub `mlr-org/mlr3proba`)
 - `mlr3extralearners` (GitHub `mlr-org/mlr3extralearners`)
@@ -61,7 +62,7 @@ Install all packages with `{pak}` (`install.packages("pak")`):
 
 ``` r
 # CRAN packages first
-pak::pak(c("tidyverse", "mlr3verse", "survival", "rpart", "glmnet", "ranger", "aorsf"), upgrade = TRUE)
+pak::pak(c("tidyverse", "mlr3verse", "survival", "rpart", "glmnet", "ranger", "aorsf", "survminer", upgrade = TRUE)
 
 # Non-CRAN packages from GitHub
 pak::pak(c("mlr-org/mlr3proba", "mlr-org/mlr3extralearners"), upgrade = TRUE)
