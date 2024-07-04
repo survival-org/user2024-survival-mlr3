@@ -15,8 +15,8 @@ format:
     toc-location: left
     html-math-method: katex
     page-layout: full
-execute:
-  freeze: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -137,7 +137,7 @@ task$prop_haz() # barely, p > 0.05 => PH
 
 Using the `autoplot()` function from `{ggplot2}`, we get the Kaplan-Meier curve:
 
-```{r}
+```{r km-curve}
 library(ggplot2)
 autoplot(task) +
   labs(title = "Lung dataset: Kaplan-Meier curve")
@@ -173,7 +173,7 @@ cox$model
 
 Visual output of the model, using the latest version from Github of `{mlr3viz}`:
 
-```{r}
+```{r cox-model-viz}
 autoplot(cox)
 ```
 
@@ -214,7 +214,7 @@ p$distr[1:4]$survival(c(100, 500, 1200))
 
 Visualization of predicted survival curves for $3$ test patients:
 
-```{r}
+```{r pred-curves}
 p2 = p$clone()$filter(row_ids = c(1,24,40))
 autoplot(p2, type = "preds")
 ```
@@ -235,6 +235,7 @@ mlr_measures$keys(pattern = "surv")
 ```
 
 Most commonly used metrics are for assessing discrimination, such as **Harrell's C-index**, **Uno's C-index** and the **(time-dependent) AUC**:
+
 ```{r}
 harrell_c = msr("surv.cindex", id = "surv.cindex.harrell")
 uno_c = msr("surv.cindex", weight_meth = "G2", id = "surv.cindex.uno")
@@ -256,7 +257,7 @@ p$score(uno_c, task = task, train_set = part$train)
 ```
 
 Calibration is traditionally performed graphically via calibration plots:
-```{r calib-plot-}
+```{r calib-plot}
 autoplot(p, type = "calib", task = task, row_ids = part$test)
 ```
 
@@ -285,10 +286,88 @@ p$score(ibrier, task = task, train_set = part$train)
 
 ### Using ML survival models {-}
 
-Mention from `mlr3extralearners`: cv.glmnet, aorsf, ranger, CoxBoost
+So far we have used the Cox regression model, but there are many more machine learning methods available via `mlr3extralearners`!
+We will take a look at the following:
+
+- Cox elastic net via [`glmnet`](https://glmnet.stanford.edu/articles/Coxnet.html)
+  - We will use `lrn("surv.cv_glmnet")`, wich internally tunes for `lambda` using cross-validation
+- Likelihood-based boosting via [`CoxBoost`](https://github.com/binderh/CoxBoost)
+  - We will use `lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty")`, which also uses internal cross-validation to tune its parameters
+- Random Forests via [`ranger`](https://imbs-hl.github.io/ranger/)
+- Oblique Random Forests via [`aorsf`](https://docs.ropensci.org/aorsf/)
+
+These learners then cover the range from penalized regression to tree ensembles and boosting.
 
 ## Benchmark example: GEX + clinical data {-}
 
 - From the tutorial (https://ocbe-uio.github.io/survomics/survomics.html#workflow)
 - data => https://github.com/ocbe-uio/survomics/blob/main/data.rds
 - Benchmark + posthoc analysis of results with `mlr3benchmark`
+
+In this example we'll take a few learners for a spin on a subset of TCGA
+
+
+```{r}
+tcga = readRDS("data/tcga.rds")
+
+task_tcga <- mlr3proba::as_task_surv(
+  x = tcga, 
+  time = "time", event = "status", id = "BRCA-TCGA"
+)
+
+# Set stratum for resampling
+task$set_col_roles("status", add_to = "stratum")
+```
+
+First we instantiate our learners as we've seen before --- we're sticking to mostly vanilla settings for now.  
+We let `glmnet` determine the optimal value for `lambda` with it's internal cross-validation method, and we similarly let `CoxBoost` to the same with it's `optimCoxBoostPenalty` method to determine the penalty and boosting iterations.
+For the forests, we use 100 trees each and otherwise accept the defaults.
+
+```{r}
+lrn_glmnet = lrn("surv.cv_glmnet", alpha = 0.5)
+lrn_coxboost = lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty", maxstepno = 1000)
+lrn_ranger = lrn("surv.ranger", num.trees = 100)
+lrn_aorsf = lrn("surv.aorsf", n_tree = 100)
+```
+
+
+```{r}
+design = benchmark_grid(
+  tasks = task_tcga,
+  learners = list(lrn_glmnet, lrn_ranger, lrn_aorsf, lrn_coxboost),
+  resamplings = rsmp("cv", folds = 3)
+)
+
+design
+```
+
+To actually run the benchmark, we're going to make use of the `future` package used throughout the `mlr3` ecosystem.
+You may want to change `plan("multisession")` to a different strategy, but regardless of your platform you will need to set `workers = 4` to the number of cores you can spare.
+
+```{r}
+future::plan("multisession", workers = 6)
+
+bmr = benchmark(design, store_models = TRUE, store_backends = TRUE)
+bmr
+```
+
+With our benchmark results in hand, we can now aggregate them to get a summary of the performance of our learners across all tasks and resamplings.
+
+We first pick two measures: Harrell's C and the integrated brier score, and then
+
+1. Score each individual resampling iteration using `$score()`, which gives us one score for each iteration
+2. Aggregate these scores using `$aggregate()`, which gives us a summary of the performance of each learner across all resamplings.
+
+```{r}
+measures = list(
+  harrell_c = msr("surv.cindex"),
+  ibs = msr("surv.brier")
+)
+
+scores = bmr$score(measures)
+scores
+
+aggr = bmr$aggregate(measures)
+aggr
+```
+
