@@ -203,6 +203,7 @@ window.Quarto = {
   <li><a href="#statistical-analysis" id="toc-statistical-analysis" class="nav-link" data-scroll-target="#statistical-analysis">Statistical analysis</a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#session-info" id="toc-session-info" class="nav-link" data-scroll-target="#session-info">Session Info</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/survival-org/user2024-survival-mlr3/blob/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li></ul></div></nav>
 </nav>
@@ -282,10 +283,11 @@ We can access the list of available learners using the <code>mlr_learners</code>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(mlr_learners<span class="sc">$</span><span class="fu">keys</span>(), <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] "regr.decision_table" "regr.cv_glmnet"      "clust.cobweb"       
- [4] "clust.hclust"        "classif.cv_glmnet"   "regr.kknn"          
- [7] "classif.LMT"         "classif.JRip"        "clust.pam"          
-[10] "regr.ranger"        </code></pre>
+<pre><code> [1] "clust.pam"                  "clust.em"                  
+ [3] "clust.agnes"                "classif.random_forest_weka"
+ [5] "regr.earth"                 "regr.cv_glmnet"            
+ [7] "regr.abess"                 "regr.xgboost"              
+ [9] "regr.sgd"                   "surv.glmnet"               </code></pre>
 </div>
 </div>
 <p>One example:</p>
@@ -399,7 +401,7 @@ Teaching Aims
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>classif.ce 
-         0 </code></pre>
+0.01492537 </code></pre>
 </div>
 </div>
 </section>
@@ -980,9 +982,9 @@ We can let <code>glmnet</code> determine the optimal value for <code>lambda</cod
 <span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [17:59:23.620] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [17:59:24.859] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [17:59:25.679] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [18:11:13.706] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [18:11:14.883] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [18:11:15.709] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1010,9 +1012,9 @@ Hidden columns: task, learner, resampling, prediction</code></pre>
 <span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [17:59:26.852] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [17:59:27.528] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [17:59:28.009] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [18:11:17.041] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [18:11:17.544] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [18:11:18.158] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1023,9 +1025,9 @@ INFO  [17:59:28.009] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA'
 <span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [17:59:28.499] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [17:59:30.820] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [17:59:33.572] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [18:11:18.613] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [18:11:20.771] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [18:11:23.066] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1036,9 +1038,9 @@ INFO  [17:59:33.572] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (
 <span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [17:59:36.629] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [17:59:36.731] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [17:59:36.772] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [18:11:25.549] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [18:11:25.637] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [18:11:25.677] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1137,20 +1139,20 @@ Hidden columns: task, learner, resampling, prediction</code></pre>
 <p>To perform the benchmark, we use the aptly named <code>benchmark()</code> function, which will perform the necessary resampling iterations and store the results for us:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [17:59:37.838] [mlr3] Running benchmark with 12 resampling iterations
-INFO  [17:59:37.841] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [17:59:38.848] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [17:59:39.686] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [17:59:40.740] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [17:59:43.115] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [17:59:45.405] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [17:59:47.909] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [17:59:47.946] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [17:59:47.983] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [17:59:48.026] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [17:59:48.634] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [17:59:49.118] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [17:59:49.561] [mlr3] Finished benchmark</code></pre>
+<pre><code>INFO  [18:11:26.869] [mlr3] Running benchmark with 12 resampling iterations
+INFO  [18:11:26.872] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [18:11:27.865] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [18:11:28.696] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [18:11:29.706] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [18:11:31.947] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [18:11:34.185] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [18:11:36.533] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [18:11:36.567] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [18:11:36.602] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [18:11:36.641] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [18:11:37.238] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [18:11:37.666] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [18:11:38.100] [mlr3] Finished benchmark</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;BenchmarkResult&gt; of 12 rows with 4 resampling runs
@@ -1380,82 +1382,82 @@ $coxboost
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [17:59:51.782] [mlr3] Running benchmark with 75 resampling iterations
-INFO  [17:59:51.785] [mlr3] Applying learner 'cox' on task 'actg' (iter 1/3)
-INFO  [17:59:51.847] [mlr3] Applying learner 'cox' on task 'actg' (iter 2/3)
-INFO  [17:59:51.915] [mlr3] Applying learner 'cox' on task 'actg' (iter 3/3)
-INFO  [17:59:51.974] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 1/3)
-INFO  [17:59:52.280] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 2/3)
-INFO  [17:59:52.626] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 3/3)
-INFO  [17:59:52.947] [mlr3] Applying learner 'ranger' on task 'actg' (iter 1/3)
-INFO  [17:59:53.111] [mlr3] Applying learner 'ranger' on task 'actg' (iter 2/3)
-INFO  [17:59:53.314] [mlr3] Applying learner 'ranger' on task 'actg' (iter 3/3)
-INFO  [17:59:53.484] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 1/3)
-INFO  [17:59:53.514] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 2/3)
-INFO  [17:59:53.542] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 3/3)
-INFO  [17:59:53.568] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 1/3)
-INFO  [17:59:54.012] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 2/3)
-INFO  [17:59:54.291] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 3/3)
-INFO  [17:59:54.549] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 1/3)
-INFO  [17:59:54.589] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 2/3)
-INFO  [17:59:54.623] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 3/3)
-INFO  [17:59:54.656] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 1/3)
-INFO  [17:59:54.756] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 2/3)
-INFO  [17:59:54.850] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 3/3)
-INFO  [17:59:54.953] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 1/3)
-INFO  [17:59:55.112] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 2/3)
-INFO  [17:59:55.273] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 3/3)
-INFO  [17:59:55.449] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 1/3)
-INFO  [17:59:55.472] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 2/3)
-INFO  [17:59:55.502] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 3/3)
-INFO  [17:59:55.525] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 1/3)
-INFO  [17:59:55.734] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 2/3)
-INFO  [17:59:55.930] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 3/3)
-INFO  [17:59:56.311] [mlr3] Applying learner 'cox' on task 'grace' (iter 1/3)
-INFO  [17:59:56.343] [mlr3] Applying learner 'cox' on task 'grace' (iter 2/3)
-INFO  [17:59:56.374] [mlr3] Applying learner 'cox' on task 'grace' (iter 3/3)
-INFO  [17:59:56.416] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 1/3)
-INFO  [17:59:56.554] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 2/3)
-INFO  [17:59:56.697] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 3/3)
-INFO  [17:59:56.834] [mlr3] Applying learner 'ranger' on task 'grace' (iter 1/3)
-INFO  [17:59:57.061] [mlr3] Applying learner 'ranger' on task 'grace' (iter 2/3)
-INFO  [17:59:57.254] [mlr3] Applying learner 'ranger' on task 'grace' (iter 3/3)
-INFO  [17:59:57.458] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 1/3)
-INFO  [17:59:57.501] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 2/3)
-INFO  [17:59:57.532] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 3/3)
-INFO  [17:59:57.564] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 1/3)
-INFO  [17:59:57.941] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 2/3)
-INFO  [17:59:58.268] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 3/3)
-INFO  [17:59:58.611] [mlr3] Applying learner 'cox' on task 'lung' (iter 1/3)
-INFO  [17:59:58.653] [mlr3] Applying learner 'cox' on task 'lung' (iter 2/3)
-INFO  [17:59:58.695] [mlr3] Applying learner 'cox' on task 'lung' (iter 3/3)
-INFO  [17:59:58.930] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 1/3)
-INFO  [17:59:58.998] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 2/3)
-INFO  [17:59:59.066] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 3/3)
-INFO  [17:59:59.147] [mlr3] Applying learner 'ranger' on task 'lung' (iter 1/3)
-INFO  [17:59:59.182] [mlr3] Applying learner 'ranger' on task 'lung' (iter 2/3)
-INFO  [17:59:59.218] [mlr3] Applying learner 'ranger' on task 'lung' (iter 3/3)
-INFO  [17:59:59.256] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 1/3)
-INFO  [17:59:59.273] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 2/3)
-INFO  [17:59:59.291] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 3/3)
-INFO  [17:59:59.308] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 1/3)
-INFO  [17:59:59.399] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 2/3)
-INFO  [17:59:59.518] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 3/3)
-INFO  [17:59:59.628] [mlr3] Applying learner 'cox' on task 'mgus' (iter 1/3)
-INFO  [17:59:59.670] [mlr3] Applying learner 'cox' on task 'mgus' (iter 2/3)
-INFO  [17:59:59.711] [mlr3] Applying learner 'cox' on task 'mgus' (iter 3/3)
-INFO  [17:59:59.754] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 1/3)
-INFO  [17:59:59.831] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 2/3)
-INFO  [17:59:59.898] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 3/3)
-INFO  [17:59:59.967] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 1/3)
-INFO  [18:00:00.013] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 2/3)
-INFO  [18:00:00.064] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 3/3)
-INFO  [18:00:00.110] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 1/3)
-INFO  [18:00:00.129] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 2/3)
-INFO  [18:00:00.148] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 3/3)
-INFO  [18:00:00.166] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 1/3)
-INFO  [18:00:00.309] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 2/3)
-INFO  [18:00:00.449] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 3/3)</code></pre>
+<pre><code>INFO  [18:11:40.276] [mlr3] Running benchmark with 75 resampling iterations
+INFO  [18:11:40.278] [mlr3] Applying learner 'cox' on task 'actg' (iter 1/3)
+INFO  [18:11:40.523] [mlr3] Applying learner 'cox' on task 'actg' (iter 2/3)
+INFO  [18:11:40.575] [mlr3] Applying learner 'cox' on task 'actg' (iter 3/3)
+INFO  [18:11:40.627] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 1/3)
+INFO  [18:11:40.932] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 2/3)
+INFO  [18:11:41.259] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 3/3)
+INFO  [18:11:41.576] [mlr3] Applying learner 'ranger' on task 'actg' (iter 1/3)
+INFO  [18:11:41.734] [mlr3] Applying learner 'ranger' on task 'actg' (iter 2/3)
+INFO  [18:11:41.913] [mlr3] Applying learner 'ranger' on task 'actg' (iter 3/3)
+INFO  [18:11:42.079] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 1/3)
+INFO  [18:11:42.110] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 2/3)
+INFO  [18:11:42.139] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 3/3)
+INFO  [18:11:42.166] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 1/3)
+INFO  [18:11:42.430] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 2/3)
+INFO  [18:11:42.730] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 3/3)
+INFO  [18:11:42.978] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 1/3)
+INFO  [18:11:43.017] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 2/3)
+INFO  [18:11:43.050] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 3/3)
+INFO  [18:11:43.083] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 1/3)
+INFO  [18:11:43.190] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 2/3)
+INFO  [18:11:43.280] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 3/3)
+INFO  [18:11:43.380] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 1/3)
+INFO  [18:11:43.532] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 2/3)
+INFO  [18:11:43.686] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 3/3)
+INFO  [18:11:43.859] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 1/3)
+INFO  [18:11:43.884] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 2/3)
+INFO  [18:11:43.908] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 3/3)
+INFO  [18:11:43.938] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 1/3)
+INFO  [18:11:44.324] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 2/3)
+INFO  [18:11:44.511] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 3/3)
+INFO  [18:11:44.887] [mlr3] Applying learner 'cox' on task 'grace' (iter 1/3)
+INFO  [18:11:44.918] [mlr3] Applying learner 'cox' on task 'grace' (iter 2/3)
+INFO  [18:11:44.951] [mlr3] Applying learner 'cox' on task 'grace' (iter 3/3)
+INFO  [18:11:44.983] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 1/3)
+INFO  [18:11:45.120] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 2/3)
+INFO  [18:11:45.266] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 3/3)
+INFO  [18:11:45.415] [mlr3] Applying learner 'ranger' on task 'grace' (iter 1/3)
+INFO  [18:11:45.635] [mlr3] Applying learner 'ranger' on task 'grace' (iter 2/3)
+INFO  [18:11:45.845] [mlr3] Applying learner 'ranger' on task 'grace' (iter 3/3)
+INFO  [18:11:46.058] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 1/3)
+INFO  [18:11:46.086] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 2/3)
+INFO  [18:11:46.116] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 3/3)
+INFO  [18:11:46.146] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 1/3)
+INFO  [18:11:46.514] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 2/3)
+INFO  [18:11:46.838] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 3/3)
+INFO  [18:11:47.169] [mlr3] Applying learner 'cox' on task 'lung' (iter 1/3)
+INFO  [18:11:47.211] [mlr3] Applying learner 'cox' on task 'lung' (iter 2/3)
+INFO  [18:11:47.253] [mlr3] Applying learner 'cox' on task 'lung' (iter 3/3)
+INFO  [18:11:47.307] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 1/3)
+INFO  [18:11:47.383] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 2/3)
+INFO  [18:11:47.456] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 3/3)
+INFO  [18:11:47.717] [mlr3] Applying learner 'ranger' on task 'lung' (iter 1/3)
+INFO  [18:11:47.753] [mlr3] Applying learner 'ranger' on task 'lung' (iter 2/3)
+INFO  [18:11:47.789] [mlr3] Applying learner 'ranger' on task 'lung' (iter 3/3)
+INFO  [18:11:47.827] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 1/3)
+INFO  [18:11:47.844] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 2/3)
+INFO  [18:11:47.862] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 3/3)
+INFO  [18:11:47.879] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 1/3)
+INFO  [18:11:47.973] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 2/3)
+INFO  [18:11:48.080] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 3/3)
+INFO  [18:11:48.190] [mlr3] Applying learner 'cox' on task 'mgus' (iter 1/3)
+INFO  [18:11:48.232] [mlr3] Applying learner 'cox' on task 'mgus' (iter 2/3)
+INFO  [18:11:48.274] [mlr3] Applying learner 'cox' on task 'mgus' (iter 3/3)
+INFO  [18:11:48.316] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 1/3)
+INFO  [18:11:48.394] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 2/3)
+INFO  [18:11:48.462] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 3/3)
+INFO  [18:11:48.531] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 1/3)
+INFO  [18:11:48.575] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 2/3)
+INFO  [18:11:48.622] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 3/3)
+INFO  [18:11:48.667] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 1/3)
+INFO  [18:11:48.687] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 2/3)
+INFO  [18:11:48.707] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 3/3)
+INFO  [18:11:48.733] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 1/3)
+INFO  [18:11:48.869] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 2/3)
+INFO  [18:11:49.011] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 3/3)</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  7,17 ; coefficient may be infinite. 
@@ -1470,7 +1472,7 @@ This happened PipeOp cph's $train()</code></pre>
 This happened PipeOp cph's $train()</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [18:00:00.596] [mlr3] Finished benchmark</code></pre>
+<pre><code>INFO  [18:11:49.165] [mlr3] Finished benchmark</code></pre>
 </div>
 </div>
 <p>We pick the IBS again and aggregate the results:</p>
@@ -1617,6 +1619,181 @@ P value adjustment method: single-step</code></pre>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
 <p>We have conducted a tiny benchmark experiment on a few survival tasks using a few learners — a good starting point for further exploration! Advanced topics we did not cover in more detail include tuning and more advanced pipelines, but we hope you got a good overview of the capabilities of <code>mlr3proba</code> and <code>mlr3</code> in general.</p>
+</section>
+<section id="session-info" class="level2">
+<h2 class="anchored" data-anchor-id="session-info">Session Info</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb120"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a>sessioninfo<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>─ Session info ───────────────────────────────────────────────────────────────
+ setting  value
+ version  R version 4.4.1 (2024-06-14)
+ os       macOS Sonoma 14.5
+ system   aarch64, darwin20
+ ui       X11
+ language (EN)
+ collate  en_US.UTF-8
+ ctype    en_US.UTF-8
+ tz       Europe/Berlin
+ date     2024-07-06
+ pandoc   3.2.1 @ /opt/homebrew/bin/ (via rmarkdown)
+
+─ Packages ───────────────────────────────────────────────────────────────────
+ package           * version    date (UTC) lib source
+ abind               1.4-5      2016-07-21 [1] CRAN (R 4.4.0)
+ aorsf               0.1.5      2024-05-30 [1] CRAN (R 4.4.0)
+ backports           1.5.0      2024-05-23 [1] CRAN (R 4.4.0)
+ bbotk               1.0.0      2024-06-28 [1] CRAN (R 4.4.0)
+ broom               1.0.6      2024-05-17 [1] CRAN (R 4.4.0)
+ BWStest             0.2.3      2023-10-10 [1] CRAN (R 4.4.0)
+ cachem              1.1.0      2024-05-16 [1] CRAN (R 4.4.0)
+ car                 3.1-2      2023-03-30 [1] CRAN (R 4.4.0)
+ carData             3.0-5      2022-01-06 [1] CRAN (R 4.4.0)
+ checkmate           2.3.1      2023-12-04 [1] CRAN (R 4.4.0)
+ class               7.3-22     2023-05-03 [2] CRAN (R 4.4.1)
+ cli                 3.6.3      2024-06-21 [1] CRAN (R 4.4.0)
+ clue                0.3-65     2023-09-23 [1] CRAN (R 4.4.0)
+ cluster             2.1.6      2023-12-01 [2] CRAN (R 4.4.1)
+ codetools           0.2-20     2024-03-31 [2] CRAN (R 4.4.1)
+ collapse            2.0.14     2024-05-24 [1] CRAN (R 4.4.0)
+ colorspace          2.1-0      2023-01-23 [1] CRAN (R 4.4.0)
+ cowplot             1.1.3      2024-01-22 [1] CRAN (R 4.4.0)
+ CoxBoost            1.5        2024-05-17 [1] Github (binderh/CoxBoost@1dc47d7)
+ crayon              1.5.3      2024-06-20 [1] CRAN (R 4.4.0)
+ data.table          1.15.4     2024-03-30 [1] CRAN (R 4.4.0)
+ DEoptimR            1.1-3      2023-10-07 [1] CRAN (R 4.4.0)
+ dictionar6          0.1.3      2021-09-13 [1] CRAN (R 4.4.0)
+ digest              0.6.36     2024-06-23 [1] CRAN (R 4.4.0)
+ diptest             0.77-1     2024-04-10 [1] CRAN (R 4.4.0)
+ distr6              1.8.4      2024-05-07 [1] Github (xoopR/distr6@95d7359)
+ dplyr               1.1.4      2023-11-17 [1] CRAN (R 4.4.0)
+ evaluate            0.24.0     2024-06-10 [1] CRAN (R 4.4.0)
+ fansi               1.0.6      2023-12-08 [1] CRAN (R 4.4.0)
+ farver              2.1.2      2024-05-13 [1] CRAN (R 4.4.0)
+ fastmap             1.2.0      2024-05-15 [1] CRAN (R 4.4.0)
+ flexmix             2.3-19     2023-03-16 [1] CRAN (R 4.4.0)
+ foreach             1.5.2      2022-02-02 [1] CRAN (R 4.4.0)
+ fpc                 2.2-12     2024-04-30 [1] CRAN (R 4.4.0)
+ future              1.33.2     2024-03-26 [1] CRAN (R 4.4.0)
+ future.apply        1.11.2     2024-03-28 [1] CRAN (R 4.4.0)
+ generics            0.1.3      2022-07-05 [1] CRAN (R 4.4.0)
+ GGally              2.2.1      2024-02-14 [1] CRAN (R 4.4.0)
+ ggplot2           * 3.5.1      2024-04-23 [1] CRAN (R 4.4.0)
+ ggpubr              0.6.0      2023-02-10 [1] CRAN (R 4.4.0)
+ ggsignif            0.6.4      2022-10-13 [1] CRAN (R 4.4.0)
+ ggstats             0.6.0      2024-04-05 [1] CRAN (R 4.4.0)
+ glmnet              4.1-8      2023-08-22 [1] CRAN (R 4.4.0)
+ globals             0.16.3     2024-03-08 [1] CRAN (R 4.4.0)
+ glue                1.7.0      2024-01-09 [1] CRAN (R 4.4.0)
+ gmp                 0.7-4      2024-01-15 [1] CRAN (R 4.4.0)
+ gridExtra           2.3        2017-09-09 [1] CRAN (R 4.4.0)
+ gtable              0.3.5      2024-04-22 [1] CRAN (R 4.4.0)
+ htmltools           0.5.8.1    2024-04-04 [1] CRAN (R 4.4.0)
+ htmlwidgets         1.6.4      2023-12-06 [1] CRAN (R 4.4.0)
+ iterators           1.0.14     2022-02-05 [1] CRAN (R 4.4.0)
+ jsonlite            1.8.8      2023-12-04 [1] CRAN (R 4.4.0)
+ kernlab             0.9-32     2023-01-31 [1] CRAN (R 4.4.0)
+ km.ci               0.5-6      2022-04-06 [1] CRAN (R 4.4.0)
+ KMsurv              0.1-5      2012-12-03 [1] CRAN (R 4.4.0)
+ knitr               1.47       2024-05-29 [1] CRAN (R 4.4.0)
+ kSamples            1.2-10     2023-10-07 [1] CRAN (R 4.4.0)
+ labeling            0.4.3      2023-08-29 [1] CRAN (R 4.4.0)
+ lattice             0.22-6     2024-03-20 [2] CRAN (R 4.4.1)
+ lava                1.8.0      2024-03-05 [1] CRAN (R 4.4.0)
+ lgr                 0.4.4      2022-09-05 [1] CRAN (R 4.4.0)
+ lifecycle           1.0.4      2023-11-07 [1] CRAN (R 4.4.0)
+ listenv             0.9.1      2024-01-29 [1] CRAN (R 4.4.0)
+ magrittr            2.0.3      2022-03-30 [1] CRAN (R 4.4.0)
+ MASS                7.3-61     2024-06-13 [1] CRAN (R 4.4.0)
+ Matrix            * 1.7-0      2024-04-26 [2] CRAN (R 4.4.1)
+ mclust              6.1.1      2024-04-29 [1] CRAN (R 4.4.0)
+ memoise             2.0.1      2021-11-26 [1] CRAN (R 4.4.0)
+ mlr3              * 0.20.0     2024-06-28 [1] CRAN (R 4.4.0)
+ mlr3benchmark     * 0.1.6      2023-05-30 [1] CRAN (R 4.4.0)
+ mlr3cluster         0.1.9      2024-03-18 [1] CRAN (R 4.4.0)
+ mlr3data            0.7.0      2023-06-29 [1] CRAN (R 4.4.0)
+ mlr3extralearners   0.8.0-9000 2024-07-02 [1] Github (mlr-org/mlr3extralearners@79220c5)
+ mlr3filters         0.8.0      2024-04-10 [1] CRAN (R 4.4.0)
+ mlr3fselect         1.0.0      2024-06-29 [1] CRAN (R 4.4.0)
+ mlr3hyperband       0.6.0      2024-06-29 [1] CRAN (R 4.4.0)
+ mlr3learners        0.7.0      2024-06-28 [1] CRAN (R 4.4.0)
+ mlr3mbo             0.2.3      2024-07-01 [1] CRAN (R 4.4.0)
+ mlr3measures        0.5.0      2022-08-05 [1] CRAN (R 4.4.0)
+ mlr3misc            0.15.1     2024-06-24 [1] CRAN (R 4.4.0)
+ mlr3pipelines       0.6.0      2024-07-01 [1] CRAN (R 4.4.0)
+ mlr3proba         * 0.6.3      2024-07-03 [1] Github (mlr-org/mlr3proba@dcd4b62)
+ mlr3tuning          1.0.0      2024-06-29 [1] CRAN (R 4.4.0)
+ mlr3tuningspaces    0.5.1.9000 2024-07-03 [1] local
+ mlr3verse         * 0.3.0      2024-06-30 [1] CRAN (R 4.4.0)
+ mlr3viz             0.9.0.9000 2024-07-03 [1] Github (mlr-org/mlr3viz@aa8a86a)
+ modeltools          0.2-23     2020-03-05 [1] CRAN (R 4.4.0)
+ multcompView        0.1-10     2024-03-08 [1] CRAN (R 4.4.0)
+ munsell             0.5.1      2024-04-01 [1] CRAN (R 4.4.0)
+ mvtnorm             1.2-5      2024-05-21 [1] CRAN (R 4.4.0)
+ nnet                7.3-19     2023-05-03 [2] CRAN (R 4.4.1)
+ ooplah              0.2.0      2022-01-21 [1] CRAN (R 4.4.0)
+ palmerpenguins      0.1.1      2022-08-15 [1] CRAN (R 4.4.0)
+ paradox             1.0.0      2024-06-11 [1] CRAN (R 4.4.0)
+ parallelly          1.37.1     2024-02-29 [1] CRAN (R 4.4.0)
+ param6              0.2.4      2024-04-26 [1] Github (xoopR/param6@0fa3577)
+ pillar              1.9.0      2023-03-22 [1] CRAN (R 4.4.0)
+ pkgconfig           2.0.3      2019-09-22 [1] CRAN (R 4.4.0)
+ plyr                1.8.9      2023-10-02 [1] CRAN (R 4.4.0)
+ PMCMRplus           1.9.10     2023-12-10 [1] CRAN (R 4.4.0)
+ prabclus            2.3-3      2023-10-24 [1] CRAN (R 4.4.0)
+ pracma              2.4.4      2023-11-10 [1] CRAN (R 4.4.0)
+ prodlim           * 2024.06.25 2024-06-24 [1] CRAN (R 4.4.0)
+ purrr               1.0.2      2023-08-10 [1] CRAN (R 4.4.0)
+ R.cache             0.16.0     2022-07-21 [1] CRAN (R 4.4.0)
+ R.methodsS3         1.8.2      2022-06-13 [1] CRAN (R 4.4.0)
+ R.oo                1.26.0     2024-01-24 [1] CRAN (R 4.4.0)
+ R.utils             2.12.3     2023-11-18 [1] CRAN (R 4.4.0)
+ R6                  2.5.1      2021-08-19 [1] CRAN (R 4.4.0)
+ ranger              0.16.0     2023-11-12 [1] CRAN (R 4.4.0)
+ RColorBrewer        1.1-3      2022-04-03 [1] CRAN (R 4.4.0)
+ Rcpp                1.0.12     2024-01-09 [1] CRAN (R 4.4.0)
+ RhpcBLASctl         0.23-42    2023-02-11 [1] CRAN (R 4.4.0)
+ rlang               1.1.4      2024-06-04 [1] CRAN (R 4.4.0)
+ rmarkdown           2.27       2024-05-17 [1] CRAN (R 4.4.0)
+ Rmpfr               0.9-5      2024-01-21 [1] CRAN (R 4.4.0)
+ robustbase          0.99-3     2024-07-01 [1] CRAN (R 4.4.0)
+ rstatix             0.7.2      2023-02-01 [1] CRAN (R 4.4.0)
+ scales              1.3.0      2023-11-28 [1] CRAN (R 4.4.0)
+ sessioninfo         1.2.2      2021-12-06 [1] CRAN (R 4.4.0)
+ set6                0.2.6      2024-04-26 [1] Github (xoopR/set6@a901255)
+ shape               1.4.6.1    2024-02-23 [1] CRAN (R 4.4.0)
+ spacefillr          0.3.3      2024-05-22 [1] CRAN (R 4.4.0)
+ stringi             1.8.4      2024-05-06 [1] CRAN (R 4.4.0)
+ stringr             1.5.1      2023-11-14 [1] CRAN (R 4.4.0)
+ styler              1.10.3     2024-04-07 [1] CRAN (R 4.4.0)
+ styler.mlr          0.1.0      2024-05-16 [1] Github (mlr-org/styler.mlr@8a86087)
+ SuppDists           1.1-9.7    2022-01-03 [1] CRAN (R 4.4.0)
+ survival          * 3.7-0      2024-06-05 [1] CRAN (R 4.4.0)
+ survivalmodels      0.1.191    2024-03-19 [1] CRAN (R 4.4.0)
+ survminer           0.4.9      2021-03-09 [1] CRAN (R 4.4.0)
+ survMisc            0.5.6      2022-04-07 [1] CRAN (R 4.4.0)
+ tibble              3.2.1      2023-03-20 [1] CRAN (R 4.4.0)
+ tidyr               1.3.1      2024-01-24 [1] CRAN (R 4.4.0)
+ tidyselect          1.2.1      2024-03-11 [1] CRAN (R 4.4.0)
+ utf8                1.2.4      2023-10-22 [1] CRAN (R 4.4.0)
+ uuid                1.2-0      2024-01-14 [1] CRAN (R 4.4.0)
+ vctrs               0.6.5      2023-12-01 [1] CRAN (R 4.4.0)
+ viridisLite         0.4.2      2023-05-02 [1] CRAN (R 4.4.0)
+ withr               3.0.0      2024-01-16 [1] CRAN (R 4.4.0)
+ xfun                0.45       2024-06-16 [1] CRAN (R 4.4.0)
+ xtable              1.8-4      2019-04-21 [1] CRAN (R 4.4.0)
+ yaml                2.3.9      2024-07-05 [1] CRAN (R 4.4.0)
+ zoo                 1.8-12     2023-04-13 [1] CRAN (R 4.4.0)
+
+ [1] /Users/Lukas/Library/R/arm64/4.4/library
+ [2] /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library
+
+──────────────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+</div>
 
 
 </section>

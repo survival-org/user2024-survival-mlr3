@@ -555,3 +555,10 @@ autoplot(bma, type = "fn", meas = "ibs")
 
 We have conducted a tiny benchmark experiment on a few survival tasks using a few learners --- a good starting point for further exploration!
 Advanced topics we did not cover in more detail include tuning and more advanced pipelines, but we hope you got a good overview of the capabilities of `mlr3proba` and `mlr3` in general.
+
+## Session Info
+
+```{r}
+sessioninfo::session_info()
+```
+
