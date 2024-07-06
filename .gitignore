@@ -41,3 +41,4 @@ rsconnect/
 # End of https://www.toptal.com/developers/gitignore/api/r
 
 /.quarto/
+_freeze

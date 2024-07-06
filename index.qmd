@@ -404,7 +404,7 @@ design
 
 To perform the benchmark, we use the aptly named `benchmark()` function, which will perform the necessary resampling iterations and store the results for us:
 
-```{r}
+```{r, echo=FALSE}
 bmr = benchmark(design, store_models = TRUE, store_backends = TRUE)
 bmr
 ```
@@ -498,6 +498,11 @@ design = benchmark_grid(
   resamplings = rsmp("cv", folds = 3)
 )
 
+design
+```
+
+
+```{r, echo=FALSE}
 # This might take a moment!
 bmr = benchmark(design, store_models = TRUE, store_backends = TRUE)
 ```
