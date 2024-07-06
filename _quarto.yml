@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: docs
+  render:
+    - "index.qmd"
 
 website:
   repo-url: https://github.com/survival-org/user2024-survival-mlr3/
