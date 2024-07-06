@@ -9,11 +9,11 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: Course
+        text: ML Survival with mlr3
     right:
       - href: https://github.com/survival-org/user2024-survival-mlr3
         icon: github
 
 execute:
-  cache: true
-  freeze: true
+  cache: false
+  freeze: auto  # re-render only when source changes

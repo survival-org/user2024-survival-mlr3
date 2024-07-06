@@ -76,7 +76,7 @@ Tasks can also specify additional properties such as stratification, which we wi
 
 The below code snippet trains a random forest model on the `penguins_simple` task (a simplified version of the `palmerpenguins` dataset, but without missing values) and evaluates the model's performance using the classification error metric:
 
-```{r}
+```{r fit-penguins}
 task = tsk("penguins_simple")
 learner = lrn("classif.ranger", num.trees = 10)
 
@@ -284,7 +284,7 @@ ibrier
 p$score(ibrier, task = task, train_set = part$train)
 ```
 
-### Using ML survival models {-}
+## Using ML survival models on high-dimensional data {-}
 
 So far we have used the Cox regression model, but there are many more machine learning methods available via `mlr3extralearners`!
 We will take a look at the following:
@@ -298,13 +298,9 @@ We will take a look at the following:
 
 These learners then cover the range from penalized regression to tree ensembles and boosting.
 
-## Benchmark example: GEX + clinical data {-}
-
-- From the tutorial (https://ocbe-uio.github.io/survomics/survomics.html#workflow)
-- data => https://github.com/ocbe-uio/survomics/blob/main/data.rds
-- Benchmark + posthoc analysis of results with `mlr3benchmark`
-
-In this example we'll take a few learners for a spin on a subset of TCGA
+Let's take these learners for a spin on a subset of TCGA breast cancer data with gene expression and clinical features.
+We first need to create a `TaskSurv` object from the data, which we can do by reading in the data and then using `as_task_surv()`.
+We also add the `status` column to the stratum, which is necessary for the resampling to ensure a similar proportion of events in the resampling folds than the complete dataset.
 
 
 ```{r}
@@ -319,55 +315,238 @@ task_tcga <- mlr3proba::as_task_surv(
 task$set_col_roles("status", add_to = "stratum")
 ```
 
-First we instantiate our learners as we've seen before --- we're sticking to mostly vanilla settings for now.  
-We let `glmnet` determine the optimal value for `lambda` with it's internal cross-validation method, and we similarly let `CoxBoost` to the same with it's `optimCoxBoostPenalty` method to determine the penalty and boosting iterations.
-For the forests, we use 100 trees each and otherwise accept the defaults.
+We can instantiate our learners as we've seen before --- we're sticking to mostly vanilla settings for now.  
+We can let `glmnet` determine the optimal value for `lambda` with it's internal cross-validation method
+Similarly, `CoxBoost` could tune itself, but we'll stick with a simple version to save some time on compute!
+For the forests, we use 100 trees each for speed and otherwise accept the defaults.
 
 ```{r}
 lrn_glmnet = lrn("surv.cv_glmnet", alpha = 0.5)
-lrn_coxboost = lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty", maxstepno = 1000)
+lrn_coxboost = lrn("surv.coxboost", penalty = 100)
 lrn_ranger = lrn("surv.ranger", num.trees = 100)
 lrn_aorsf = lrn("surv.aorsf", n_tree = 100)
 ```
 
+We can now use `resample()` to evaluate the performance of each of these learners on the task.
+To to this, we decide on two measures: Harrell's C and the integrated brier score, and we also instantiate a resampling to use for comparison, such that we ensure all learners see the same data.
+
+```{r}
+measures = list(msr("surv.cindex", id = "cindex"), msr("surv.brier", id = "ibs"))
+
+resampling = rsmp("cv", folds = 3)
+resampling$instantiate(task_tcga)
+
+rr_glmnet = resample(
+  task = task_tcga,
+  learner = lrn_glmnet,
+  resampling = resampling
+)
+
+rr_glmnet$score(measures)
+```
+
+Well, looks like `glmnet` out of the box does not do well on this dataset, judging by the C-index of 0.5.
+This is what the null model achieves, after all!
+
+Feel free to play with the parameters of `glmnet` a bit more --- for example, does changing `alpha` help?
+
+We can repeat the same procedure for the other learners:
+
+```{r}
+rr_coxboost = resample(
+  task = task_tcga,
+  learner = lrn_coxboost,
+  resampling = resampling
+)
+
+rr_ranger = resample(
+  task = task_tcga,
+  learner = lrn_ranger,
+  resampling = resampling
+)
+
+rr_aorsf = resample(
+  task = task_tcga,
+  learner = lrn_aorsf,
+  resampling = resampling
+)
+
+rr_coxboost$score(measures)
+rr_ranger$score(measures)
+rr_aorsf$score(measures)
+```
+
+Now we have a comparison of the performance of the different learners on the task.
+We can again aggregate these results to get a summary of the performance of each learner across all resamplings:
+
+```{r}
+rr_glmnet$aggregate(measures)
+rr_coxboost$aggregate(measures)
+rr_ranger$aggregate(measures)
+rr_aorsf$aggregate(measures)
+```
+
+
+Now, for a quick example on a single dataset this approach is goon enough, but a bit cumbersome.
+What we essentially did here was a naive benchmarking of the learners on the task --- something `mlr3` has dedicated tools for!
+
+We can perform the same procedure by first defining a *benchmark design* of one or more tasks and at least two learners like so:
 
 ```{r}
 design = benchmark_grid(
   tasks = task_tcga,
   learners = list(lrn_glmnet, lrn_ranger, lrn_aorsf, lrn_coxboost),
-  resamplings = rsmp("cv", folds = 3)
+  resamplings = resampling
 )
 
 design
 ```
 
-To actually run the benchmark, we're going to make use of the `future` package used throughout the `mlr3` ecosystem.
-You may want to change `plan("multisession")` to a different strategy, but regardless of your platform you will need to set `workers = 4` to the number of cores you can spare.
+To perform the benchmark, we use the aptly named `benchmark()` function, which will perform the necessary resampling iterations and store the results for us:
 
 ```{r}
-future::plan("multisession", workers = 6)
-
 bmr = benchmark(design, store_models = TRUE, store_backends = TRUE)
 bmr
 ```
 
-With our benchmark results in hand, we can now aggregate them to get a summary of the performance of our learners across all tasks and resamplings.
-
-We first pick two measures: Harrell's C and the integrated brier score, and then
-
-1. Score each individual resampling iteration using `$score()`, which gives us one score for each iteration
-2. Aggregate these scores using `$aggregate()`, which gives us a summary of the performance of each learner across all resamplings.
+When we `$score()` or `$aggregate()` the benchmark result, we should get the same exact scores as before because we used the instantiated resampling from earlier, meaning each elarner again saw the same data:
 
 ```{r}
-measures = list(
-  harrell_c = msr("surv.cindex"),
-  ibs = msr("surv.brier")
-)
+bmr$score(measures)
 
-scores = bmr$score(measures)
-scores
-
-aggr = bmr$aggregate(measures)
-aggr
+bmr$aggregate(measures)
 ```
 
+We can also visualize the results --- see `?autoplot.BenchmarkResult` for more options:
+
+```{r bmr-box}
+autoplot(bmr, type = "boxplot", measure = msr("surv.brier"))
+```
+
+From our quick tests, which learner now seems to have done the best?
+Given that we used these learners more or less off the shelf without tuning, we should not put too much weight on these results, but it's a good starting point for further exploration!
+
+Tuning is a complex topic and you can learn more about it in the [mlr3book chapter](https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html), but unfortunately we don't have time to cover it here!
+
+## Benchmarking with multiple datasets {-}
+
+:::{.callout-tip title="Teaching Aims"}
+- Perform a small-scale benchmark
+- Aggregate and visualize the results
+- Perform a statistical analysis of the results
+:::
+
+A proper benchmark can take a lot of time and planning, but it can pay off to get a good overview of the performance of different learners on different tasks relevant to your field!
+
+In this example, we'll take a number of small datasets provided by `mlr3proba` and benchmark the learners we used before on them.
+These tasks are small enough to hopefully not spend too much time waiting for computations to finish, but we hope you get enough of an idea to feel confident to perform your own experiments!
+
+The procedure is as follows:
+
+1. Gather tasks as a list.
+2. Gather our learners. Normally this would include deciding on tuning spaces!
+3. Define a resampling strategy.
+4. Decide on measures to use.
+
+
+For step 1, we'll select some survival tasks from `mlr_tasks` for this benchmark:
+
+```{r}
+tasks = list(
+  tsk("actg"),
+  tsk("gbcs"),
+  tsk("grace"),
+  tsk("lung"),
+  tsk("mgus")
+)
+
+tasks
+```
+
+Many have categorical features (`fct`), which can be a bit tricky to handle for some learners, so we will take a shortcut and add a feature encoding `PipeOp` to the learners that need it.
+Pipelines and preprocessing are very useful, and [the mlr3book](https://mlr3book.mlr-org.com/chapters/chapter9/preprocessing.html#factor-encoding) again has you covered!
+
+We use the `po("encode")` pipe operator to encode the factors as dummy-encoded variables (`method = "treatment"`) for the Cox model, and use the default (one-hot encoding) for the others.
+The `%>>%` operator is used to chain `PipeOps` and learners together, and we wrap the pipeline in `as_learner` such that we can treat it as a learner just like the others.
+
+
+```{r}
+preproc = po("encode", method = "treatment")
+
+learners = list(
+  cox = as_learner(preproc %>>% lrn("surv.coxph",id = "cph")),
+  glmnet = as_learner(preproc %>>% lrn("surv.cv_glmnet", alpha = 0.5)),
+  ranger = lrn("surv.ranger", num.trees = 100),
+  aorsf = lrn("surv.aorsf", n_tree = 100),
+  coxboost = as_learner(preproc %>>% lrn("surv.coxboost", penalty = 100))
+)
+```
+
+A small convenience thing we can do here is to set IDs for the learners, which will make the output of further steps more readable:
+
+```{r, echo=FALSE}
+mlr3misc::imap(learners, function(l, id) l$id = id)
+```
+
+Moving on to the benchmark, we create a design grid as before, only now we have multiple tasks.
+Luckily, `benchmark_grid()` can handle this for us by instantiating the resampling for each task, so we don't have to worry about this here!
+
+```{r}
+design = benchmark_grid(
+  tasks = tasks,
+  learners = learners,
+  resamplings = rsmp("cv", folds = 3)
+)
+
+# This might take a moment!
+bmr = benchmark(design, store_models = TRUE, store_backends = TRUE)
+```
+
+We pick the IBS again and aggregate the results:
+
+```{r}
+measure = msr("surv.brier", id = "ibs")
+
+bmr$aggregate(measure)
+```
+
+### Statistical analysis {-}
+
+Rather than just computing average scores, we can leverage `mlr3benchmark` for additional analysis steps, including a statistical analysis of the results.
+The starting point is to convert the benchmark result (`bmr`) to an aggregated benchmark result (`bma`), which is a more convenient format for further analysis:
+
+```{r}
+library(mlr3benchmark)
+bma = as_benchmark_aggr(bmr, meas = measure)
+bma
+```
+
+
+This brings with it a few more `autoplot` methods, see `?autoplot.BenchmarkAggr`.
+
+```{r bma-box}
+autoplot(bma, type = "box", meas = "ibs")
+```
+
+For the statistical analysis, we can use a simple rank-based analysis with a global Friedman test to see if there are significant differences between the learners:
+
+```{r}
+bma$friedman_test()
+```
+
+The corresponding post-hoc test for all pairwise comparison can be performed as follows:
+
+```{r}
+bma$friedman_posthoc()
+```
+
+Which is also available graphically:
+
+```{r bma-friedman}
+autoplot(bma, type = "fn", meas = "ibs")
+```
+
+## Conclusion
+
+We have conducted a tiny benchmark experiment on a few survival tasks using a few learners --- a good starting point for further exploration!
+Advanced topics we did not cover in more detail include tuning and more advanced pipelines, but we hope you got a good overview of the capabilities of `mlr3proba` and `mlr3` in general.
