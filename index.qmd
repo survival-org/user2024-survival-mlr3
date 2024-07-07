@@ -233,6 +233,7 @@ Validation of a survival model can be done by assessing:
 :::
 
 Many measures included in `mlr3proba`:
+
 ```{r}
 mlr_measures$keys(pattern = "surv")
 ```
@@ -312,7 +313,7 @@ We first need to create a `TaskSurv` object from the data, which we can do by re
 We also add the `status` column to the stratum, which is necessary for the resampling to ensure a similar proportion of events in the resampling folds with the complete dataset.
 
 
-```{r}
+```{r tcga-task}
 tcga = readRDS("data/tcga.rds")
 
 task_tcga = mlr3proba::as_task_surv(
@@ -330,17 +331,21 @@ We can let `glmnet` determine the optimal value for `lambda` with it's internal 
 Similarly, `CoxBoost` could tune itself, but we'll stick with a simple version to save some time on compute!
 For the forests, we use 100 trees each for speed and otherwise accept the defaults.
 
-```{r}
+:::{.callout-note}
+To speed things up a little, we let learners use 4 parallel threads (`num.threads` in `ranger` and `n_thread` in `aorsf`), which you may want to change depending on your available resources!
+:::
+
+```{r lrns-init}
 lrn_glmnet = lrn("surv.cv_glmnet", alpha = 0.5)
 lrn_coxboost = lrn("surv.coxboost", penalty = 100)
-lrn_ranger = lrn("surv.ranger", num.trees = 100)
-lrn_aorsf = lrn("surv.aorsf", n_tree = 100)
+lrn_ranger = lrn("surv.ranger", num.trees = 100, num.threads = 4)
+lrn_aorsf = lrn("surv.aorsf", n_tree = 100, n_thread = 4)
 ```
 
 We can now use `resample()` to evaluate the performance of each of these learners on the task.
 To do this, we decide on two measures: Harrell's C and the integrated brier score, and we also instantiate a resampling to use for comparison, such that we ensure all learners see the same data.
 
-```{r}
+```{r rr-glmnet}
 measures = list(msr("surv.cindex", id = "cindex"), msr("surv.brier", id = "ibs"))
 
 resampling = rsmp("cv", folds = 3)
@@ -362,7 +367,7 @@ Feel free to play with the parameters of `glmnet` a bit more --- for example, do
 
 We can repeat the same procedure for the other learners:
 
-```{r}
+```{r rr-others}
 rr_coxboost = resample(
   task = task_tcga,
   learner = lrn_coxboost,
@@ -407,7 +412,7 @@ Without going into too much detail about the theory, for tuning we need:
 - A stopping criterion, e.g. stopping after 100 evaluations
 
 
-```{r}
+```{r glmnet-autotune}
 at_glmnet = auto_tuner(
   learner = lrn("surv.cv_glmnet", alpha = to_tune(0, 1)),
   tuner = tnr("grid_search"),
@@ -419,7 +424,7 @@ at_glmnet = auto_tuner(
 
 We can then try this out on the full dataset like so:
 
-```{r}
+```{r glmnet-at-train}
 at_glmnet$train(task_tcga)
 ```
 
@@ -465,14 +470,14 @@ design
 
 To perform the benchmark, we use the aptly named `benchmark()` function, which will perform the necessary resampling iterations and store the results for us --- this will take a moment!
 
-```{r, echo=FALSE, eval=interactive()}
+```{r bm-tune, echo=FALSE, eval=interactive()}
 bmr = benchmark(design, store_models = TRUE, store_backends = TRUE)
 bmr
 ```
 
 When we `$score()` or `$aggregate()` the benchmark result, we should get the same exact scores as before for the untuned learners because we used the instantiated resampling from earlier, meaning each learner again saw the same data --- `glmnet` and `coxboost` however should do better because now we spent time tuning them!
 
-```{r, eval=interactive()}
+```{r bmr-aggr, eval=interactive()}
 # bmr$score(measures)
 bmr$aggregate(msr("surv.cindex"))
 ```
@@ -511,7 +516,7 @@ The procedure is as follows:
 
 For step 1, we'll select some survival tasks from `mlr_tasks` for this benchmark:
 
-```{r}
+```{r tasks-bm}
 tasks = list(
   tsk("actg"),
   tsk("gbcs"),
@@ -530,14 +535,14 @@ We use the `po("encode")` pipe operator to encode the factors as dummy-encoded v
 The `%>>%` operator is used to chain `PipeOps` and learners together, and we wrap the pipeline in `as_learner` such that we can treat it as a learner just like the others.
 
 
-```{r}
+```{r lrn-bm}
 preproc = po("encode", method = "treatment")
 
 learners = list(
   cox = as_learner(preproc %>>% lrn("surv.coxph",id = "cph")),
   glmnet = as_learner(preproc %>>% lrn("surv.cv_glmnet", alpha = 0.5)),
-  ranger = lrn("surv.ranger", num.trees = 100),
-  aorsf = lrn("surv.aorsf", n_tree = 100),
+  ranger = lrn("surv.ranger", num.trees = 100, num.threads = 4),
+  aorsf = lrn("surv.aorsf", n_tree = 100, n_thread = 4),
   coxboost = as_learner(preproc %>>% lrn("surv.coxboost", penalty = 100))
 )
 ```
@@ -562,7 +567,7 @@ design
 ```
 
 
-```{r, echo=FALSE}
+```{r bm, echo=FALSE}
 # This might take a moment!
 bmr = benchmark(design, store_models = TRUE, store_backends = TRUE)
 ```
@@ -580,7 +585,7 @@ bmr$aggregate(measure)
 Rather than just computing average scores, we can leverage `mlr3benchmark` for additional analysis steps, including a statistical analysis of the results.
 The starting point is to convert the benchmark result (`bmr`) to an aggregated benchmark result (`bma`), which is a more convenient format for further analysis:
 
-```{r}
+```{r as-bma}
 library(mlr3benchmark)
 bma = as_benchmark_aggr(bmr, meas = measure)
 bma
@@ -592,7 +597,7 @@ This brings with it a few more `autoplot` methods, see `?autoplot.BenchmarkAggr`
 autoplot(bma, type = "box", meas = "ibs")
 ```
 
-For the statistical analysis, we can use a simple rank-based analysis with a global Friedman test to see if there are significant differences between the learners:
+For the statistical analysis, we can use a simple rank-based analysis following  @Demsar2006 with a global Friedman test to see if there are significant differences between the learners:
 
 ```{r}
 bma$friedman_test()
@@ -604,9 +609,9 @@ The corresponding post-hoc test for all pairwise comparison can be performed as 
 bma$friedman_posthoc()
 ```
 
-A visual approach is the critical difference plot, which shows a connecting line between the learners that _are not_ statistically different from each other (as far as their average ranks are concerned).
+A visual approach is the critical difference plot [@Demsar2006], which shows a connecting line between the learners that _are not_ statistically different from each other (as far as their average ranks are concerned).
 
-```{r bma-cd}
+```{r critical-difference-ibs}
 autoplot(bma, type = "cd", meas = "ibs", ratio = .7)
 ```
 
@@ -618,7 +623,7 @@ Advanced topics we did not cover in more detail include tuning and more advanced
 
 ## Session Info
 
-```{r}
+```{r sess}
 sessioninfo::session_info()
 ```
 
