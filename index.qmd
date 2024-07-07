@@ -284,15 +284,21 @@ ibrier
 p$score(ibrier, task = task, train_set = part$train)
 ```
 
-## Using ML survival models on high-dimensional data {-}
+## Using and tuning ML survival models on high-dimensional data {-}
+
+:::{.callout-tip title="Teaching Aims"}
+- Create your own survival tasks from external data
+- Evaluate performance using `resample()`
+- Tune hyperparameters with `auto_tuner()`
+:::
 
 So far we have used the Cox regression model, but there are many more machine learning methods available via `mlr3extralearners`!
 We will take a look at the following:
 
 - Cox elastic net via [`glmnet`](https://glmnet.stanford.edu/articles/Coxnet.html)
   - We will use `lrn("surv.cv_glmnet")`, wich internally tunes for `lambda` using cross-validation
-- Likelihood-based boosting via [`CoxBoost`](https://github.com/binderh/CoxBoost)
-  - We will use `lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty")`, which also uses internal cross-validation to tune its parameters
+- Likelihood-based boosting via [`CoxBoost`](https://github.com/binderh/CoxBoost) 
+  - We later use `lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty")`, which also uses internal cross-validation to tune its parameters
 - Random Forests via [`ranger`](https://imbs-hl.github.io/ranger/)
 - Oblique Random Forests via [`aorsf`](https://docs.ropensci.org/aorsf/)
 
@@ -312,7 +318,8 @@ task_tcga <- mlr3proba::as_task_surv(
 )
 
 # Set stratum for resampling
-task$set_col_roles("status", add_to = "stratum")
+task_tcga$set_col_roles("status", add_to = "stratum")
+task_tcga
 ```
 
 We can instantiate our learners as we've seen before --- we're sticking to mostly vanilla settings for now.  
@@ -386,47 +393,97 @@ rr_ranger$aggregate(measures)
 rr_aorsf$aggregate(measures)
 ```
 
+Of course in practice we want to tune these learners for optimal performance.
+Tuning can be quite a complex topic, but `mlr3` makes it relatively simple with the `auto_tuner` approach.
+Without going into too much detail about the theory, for tuning we need:
 
-Now, for a quick example on a single dataset this approach is goon enough, but a bit cumbersome.
-What we essentially did here was a naive benchmarking of the learners on the task --- something `mlr3` has dedicated tools for!
+- A learner to tune, with information on which parameters to tune in which range (the search space)
+- A strategy (`tuner`), such as random search, grid search, or more advanced options, which defines how we search for new parameter values to try
+- A resampling strategy to evaluate performance during tuning
+- A tuning measure top optimize for
+- A stopping criterion, e.g. stopping after 100 evaluations
 
-We can perform the same procedure by first defining a *benchmark design* of one or more tasks and at least two learners like so:
+
+```{r}
+at_glmnet = auto_tuner(
+  learner = lrn("surv.cv_glmnet", alpha = to_tune(0, 1)),
+  tuner = tnr("grid_search"),
+  resampling = rsmp("cv", folds = 3),
+  measure = msr("surv.cindex"),
+  term_evals = 100
+)
+```
+
+We can then try this out on the full dataset like so:
+
+```{r}
+at_glmnet$train(task_tcga)
+```
+
+We can see all evaluated parameter combinations in the `$tuning_instance` and the best result in `$tuning_result`
+
+```{r}
+at_glmnet$tuning_instance
+at_glmnet$tuning_result
+```
+
+
+We get a better result than 0.5 now, but note *we used all of the data* now, so while this would be the approach we could use to find a model for new data, right now we want to compare our learners fairly!
+That means: *Nested resampling*, where we use resampling for tuning, and for evaluation in two layers.
+
+In this step, we simplify the `resample()` steps using `benchmark()`, and we'll also tune some of the learners.
+
+We start by first defining our learners with tuning, using `cv_coxboost` to tune itself without the `auto_tuner` and tuning `glmnet` similar to before, but we'll set small budgets to keep the runtime of this example code managable:
+
+```{r}
+at_glmnet = auto_tuner(
+  learner = lrn("surv.cv_glmnet", alpha = to_tune(0, 1)),
+  tuner = tnr("grid_search"),
+  resampling = rsmp("cv", folds = 3),
+  measure = msr("surv.cindex"),
+  term_evals = 25
+)
+
+# For CoxBoost's optimCoxBoostPenalty, iter.max is analogous to term_evals 
+lrn_cvcoxboost = lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty", iter.max = 25)
+```
+
+The we create a *benchmark design* of one or more tasks and at least two learners like so:
 
 ```{r}
 design = benchmark_grid(
   tasks = task_tcga,
-  learners = list(lrn_glmnet, lrn_ranger, lrn_aorsf, lrn_coxboost),
+  learners = list(at_glmnet, lrn_ranger, lrn_aorsf, lrn_cvcoxboost),
   resamplings = resampling
 )
 
 design
 ```
 
-To perform the benchmark, we use the aptly named `benchmark()` function, which will perform the necessary resampling iterations and store the results for us:
+To perform the benchmark, we use the aptly named `benchmark()` function, which will perform the necessary resampling iterations and store the results for us --- this will take a moment!
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 bmr = benchmark(design, store_models = TRUE, store_backends = TRUE)
 bmr
 ```
 
-When we `$score()` or `$aggregate()` the benchmark result, we should get the same exact scores as before because we used the instantiated resampling from earlier, meaning each elarner again saw the same data:
+When we `$score()` or `$aggregate()` the benchmark result, we should get the same exact scores as before for the untuned learners because we used the instantiated resampling from earlier, meaning each learner again saw the same data --- `glmnet` and `coxboost` however should do better because now we spent time tuning them!
 
 ```{r}
-bmr$score(measures)
-
-bmr$aggregate(measures)
+# bmr$score(measures)
+bmr$aggregate(msr("surv.cindex"))
 ```
 
 We can also visualize the results --- see `?autoplot.BenchmarkResult` for more options:
 
 ```{r bmr-box}
-autoplot(bmr, type = "boxplot", measure = msr("surv.brier"))
+autoplot(bmr, type = "boxplot", measure = msr("surv.cindex"))
 ```
 
 From our quick tests, which learner now seems to have done the best?
 Given that we used these learners more or less off the shelf without tuning, we should not put too much weight on these results, but it's a good starting point for further exploration!
 
-Tuning is a complex topic and you can learn more about it in the [mlr3book chapter](https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html), but unfortunately we don't have time to cover it here!
+Tuning is a complex topic we barely scratched the surface of, but you can learn more about it in the [mlr3book chapter](https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html)!
 
 ## Benchmarking with multiple datasets {-}
 
@@ -526,7 +583,6 @@ bma = as_benchmark_aggr(bmr, meas = measure)
 bma
 ```
 
-
 This brings with it a few more `autoplot` methods, see `?autoplot.BenchmarkAggr`.
 
 ```{r bma-box}
@@ -545,11 +601,12 @@ The corresponding post-hoc test for all pairwise comparison can be performed as 
 bma$friedman_posthoc()
 ```
 
-Which is also available graphically:
+A visual approach is the critical difference plot, which shows a connecting line between the learners that _are not_ statistically different from each other (as far as their average ranks are concerned).
 
-```{r bma-friedman}
-autoplot(bma, type = "fn", meas = "ibs")
+```{r}
+autoplot(bma, type = "cd", meas = "ibs", ratio = .7)
 ```
+
 
 ## Conclusion
 
