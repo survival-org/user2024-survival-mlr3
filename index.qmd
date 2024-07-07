@@ -445,7 +445,7 @@ at_glmnet = auto_tuner(
 )
 
 # For CoxBoost's optimCoxBoostPenalty, iter.max is analogous to term_evals 
-lrn_cvcoxboost = lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty", iter.max = 25)
+lrn_cvcoxboost = lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty", iter.max = 10)
 ```
 
 The we create a *benchmark design* of one or more tasks and at least two learners like so:
@@ -462,21 +462,21 @@ design
 
 To perform the benchmark, we use the aptly named `benchmark()` function, which will perform the necessary resampling iterations and store the results for us --- this will take a moment!
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo=FALSE, eval=interactive()}
 bmr = benchmark(design, store_models = TRUE, store_backends = TRUE)
 bmr
 ```
 
 When we `$score()` or `$aggregate()` the benchmark result, we should get the same exact scores as before for the untuned learners because we used the instantiated resampling from earlier, meaning each learner again saw the same data --- `glmnet` and `coxboost` however should do better because now we spent time tuning them!
 
-```{r}
+```{r, eval=interactive()}
 # bmr$score(measures)
 bmr$aggregate(msr("surv.cindex"))
 ```
 
 We can also visualize the results --- see `?autoplot.BenchmarkResult` for more options:
 
-```{r bmr-box}
+```{r bmr-box, eval=interactive()}
 autoplot(bmr, type = "boxplot", measure = msr("surv.cindex"))
 ```
 
@@ -603,7 +603,7 @@ bma$friedman_posthoc()
 
 A visual approach is the critical difference plot, which shows a connecting line between the learners that _are not_ statistically different from each other (as far as their average ranks are concerned).
 
-```{r}
+```{r bma-cd}
 autoplot(bma, type = "cd", meas = "ibs", ratio = .7)
 ```
 

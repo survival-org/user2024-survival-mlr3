@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="John Zobolas, Lukas Burk">
-<meta name="dcterms.date" content="2024-07-06">
+<meta name="dcterms.date" content="2024-07-07">
 <meta name="description" content="Tutorial for the useR! 2024 conference in Salzburg, Austria (8-11 July)">
 
 <title>Intro to Machine Learning for Survival Analysis with mlr3</title>
@@ -197,7 +197,7 @@ window.Quarto = {
   <li><a href="#prediction-types" id="toc-prediction-types" class="nav-link" data-scroll-target="#prediction-types">Prediction types</a></li>
   <li><a href="#model-evaluation" id="toc-model-evaluation" class="nav-link" data-scroll-target="#model-evaluation">Model evaluation</a></li>
   </ul></li>
-  <li><a href="#using-ml-survival-models-on-high-dimensional-data" id="toc-using-ml-survival-models-on-high-dimensional-data" class="nav-link" data-scroll-target="#using-ml-survival-models-on-high-dimensional-data">Using ML survival models on high-dimensional data</a></li>
+  <li><a href="#using-and-tuning-ml-survival-models-on-high-dimensional-data" id="toc-using-and-tuning-ml-survival-models-on-high-dimensional-data" class="nav-link" data-scroll-target="#using-and-tuning-ml-survival-models-on-high-dimensional-data">Using and tuning ML survival models on high-dimensional data</a></li>
   <li><a href="#benchmarking-with-multiple-datasets" id="toc-benchmarking-with-multiple-datasets" class="nav-link" data-scroll-target="#benchmarking-with-multiple-datasets">Benchmarking with multiple datasets</a>
   <ul class="collapse">
   <li><a href="#statistical-analysis" id="toc-statistical-analysis" class="nav-link" data-scroll-target="#statistical-analysis">Statistical analysis</a></li>
@@ -238,7 +238,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 6, 2024</p>
+      <p class="date">July 7, 2024</p>
     </div>
   </div>
   
@@ -283,11 +283,10 @@ We can access the list of available learners using the <code>mlr_learners</code>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(mlr_learners<span class="sc">$</span><span class="fu">keys</span>(), <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] "clust.pam"                  "clust.em"                  
- [3] "clust.agnes"                "classif.random_forest_weka"
- [5] "regr.earth"                 "regr.cv_glmnet"            
- [7] "regr.abess"                 "regr.xgboost"              
- [9] "regr.sgd"                   "surv.glmnet"               </code></pre>
+<pre><code> [1] "classif.fnn"         "surv.loghaz"         "classif.PART"       
+ [4] "clust.agnes"         "classif.C50"         "regr.mob"           
+ [7] "classif.featureless" "clust.ap"            "classif.glmer"      
+[10] "classif.ranger"     </code></pre>
 </div>
 </div>
 <p>One example:</p>
@@ -401,7 +400,7 @@ Teaching Aims
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>classif.ce 
-0.01492537 </code></pre>
+         0 </code></pre>
 </div>
 </div>
 </section>
@@ -924,8 +923,25 @@ Note
 </div>
 </section>
 </section>
-<section id="using-ml-survival-models-on-high-dimensional-data" class="level2 unnumbered">
-<h2 class="unnumbered anchored" data-anchor-id="using-ml-survival-models-on-high-dimensional-data">Using ML survival models on high-dimensional data</h2>
+<section id="using-and-tuning-ml-survival-models-on-high-dimensional-data" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="using-and-tuning-ml-survival-models-on-high-dimensional-data">Using and tuning ML survival models on high-dimensional data</h2>
+<div class="callout callout-style-default callout-tip callout-titled" title="Teaching Aims">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Teaching Aims
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Create your own survival tasks from external data</li>
+<li>Evaluate performance using <code>resample()</code></li>
+<li>Tune hyperparameters with <code>auto_tuner()</code></li>
+</ul>
+</div>
+</div>
 <p>So far we have used the Cox regression model, but there are many more machine learning methods available via <code>mlr3extralearners</code>! We will take a look at the following:</p>
 <ul>
 <li>Cox elastic net via <a href="https://glmnet.stanford.edu/articles/Coxnet.html"><code>glmnet</code></a>
@@ -934,7 +950,7 @@ Note
 </ul></li>
 <li>Likelihood-based boosting via <a href="https://github.com/binderh/CoxBoost"><code>CoxBoost</code></a>
 <ul>
-<li>We will use <code>lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty")</code>, which also uses internal cross-validation to tune its parameters</li>
+<li>We later use <code>lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty")</code>, which also uses internal cross-validation to tune its parameters</li>
 </ul></li>
 <li>Random Forests via <a href="https://imbs-hl.github.io/ranger/"><code>ranger</code></a></li>
 <li>Oblique Random Forests via <a href="https://docs.ropensci.org/aorsf/"><code>aorsf</code></a></li>
@@ -952,50 +968,64 @@ Note
 <span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Set stratum for resampling</span></span>
-<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>task<span class="sc">$</span><span class="fu">set_col_roles</span>(<span class="st">"status"</span>, <span class="at">add_to =</span> <span class="st">"stratum"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>task_tcga<span class="sc">$</span><span class="fu">set_col_roles</span>(<span class="st">"status"</span>, <span class="at">add_to =</span> <span class="st">"stratum"</span>)</span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>task_tcga</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;TaskSurv:BRCA-TCGA&gt; (1047 x 54)
+* Target: time, status
+* Properties: strata
+* Features (52):
+  - dbl (52): ACTR3B, ANLN, BAG1, BCL2, BIRC5, BLVRA, CCNB1, CCNE1,
+    CDC20, CDC6, CDH3, CENPF, CEP55, CXXC5, EGFR, ERBB2, ESR1, EXO1,
+    FGFR4, FOXA1, FOXC1, GPR160, GRB7, KIF2C, KRT14, KRT17, KRT5, MAPT,
+    MDM2, MELK, MIA, MKI67, MLPH, MMP11, MYBL2, MYC, NAT1, NDC80, NUF2,
+    ORC6, PGR, PHGDH, PTTG1, RRM2, SFRP1, SLC39A6, TMEM45B, TYMS,
+    UBE2C, UBE2T, age, ethnicity
+* Strata: status</code></pre>
+</div>
 </div>
 <p>We can instantiate our learners as we’ve seen before — we’re sticking to mostly vanilla settings for now.<br>
 We can let <code>glmnet</code> determine the optimal value for <code>lambda</code> with it’s internal cross-validation method Similarly, <code>CoxBoost</code> could tune itself, but we’ll stick with a simple version to save some time on compute! For the forests, we use 100 trees each for speed and otherwise accept the defaults.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>lrn_glmnet <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>)</span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>lrn_coxboost <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.coxboost"</span>, <span class="at">penalty =</span> <span class="dv">100</span>)</span>
-<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>lrn_ranger <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.ranger"</span>, <span class="at">num.trees =</span> <span class="dv">100</span>)</span>
-<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>lrn_aorsf <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.aorsf"</span>, <span class="at">n_tree =</span> <span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>lrn_glmnet <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>)</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>lrn_coxboost <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.coxboost"</span>, <span class="at">penalty =</span> <span class="dv">100</span>)</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>lrn_ranger <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.ranger"</span>, <span class="at">num.trees =</span> <span class="dv">100</span>)</span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>lrn_aorsf <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.aorsf"</span>, <span class="at">n_tree =</span> <span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>We can now use <code>resample()</code> to evaluate the performance of each of these learners on the task. To to this, we decide on two measures: Harrell’s C and the integrated brier score, and we also instantiate a resampling to use for comparison, such that we ensure all learners see the same data.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>measures <span class="ot">=</span> <span class="fu">list</span>(<span class="fu">msr</span>(<span class="st">"surv.cindex"</span>, <span class="at">id =</span> <span class="st">"cindex"</span>), <span class="fu">msr</span>(<span class="st">"surv.brier"</span>, <span class="at">id =</span> <span class="st">"ibs"</span>))</span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>resampling <span class="ot">=</span> <span class="fu">rsmp</span>(<span class="st">"cv"</span>, <span class="at">folds =</span> <span class="dv">3</span>)</span>
-<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>resampling<span class="sc">$</span><span class="fu">instantiate</span>(task_tcga)</span>
-<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>rr_glmnet <span class="ot">=</span> <span class="fu">resample</span>(</span>
-<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">task =</span> task_tcga,</span>
-<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> lrn_glmnet,</span>
-<span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> resampling</span>
-<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>measures <span class="ot">=</span> <span class="fu">list</span>(<span class="fu">msr</span>(<span class="st">"surv.cindex"</span>, <span class="at">id =</span> <span class="st">"cindex"</span>), <span class="fu">msr</span>(<span class="st">"surv.brier"</span>, <span class="at">id =</span> <span class="st">"ibs"</span>))</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>resampling <span class="ot">=</span> <span class="fu">rsmp</span>(<span class="st">"cv"</span>, <span class="at">folds =</span> <span class="dv">3</span>)</span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>resampling<span class="sc">$</span><span class="fu">instantiate</span>(task_tcga)</span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>rr_glmnet <span class="ot">=</span> <span class="fu">resample</span>(</span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">task =</span> task_tcga,</span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> lrn_glmnet,</span>
+<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> resampling</span>
+<span id="cb64-10"><a href="#cb64-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [18:11:13.706] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [18:11:14.883] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [18:11:15.709] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [12:50:31.992] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:50:33.450] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:50:34.571] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>rr_glmnet<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>rr_glmnet<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>     task_id     learner_id resampling_id iteration cindex       ibs
-      &lt;char&gt;         &lt;char&gt;        &lt;char&gt;     &lt;int&gt;  &lt;num&gt;     &lt;num&gt;
-1: BRCA-TCGA surv.cv_glmnet            cv         1    0.5 0.1756614
-2: BRCA-TCGA surv.cv_glmnet            cv         2    0.5 0.1324771
-3: BRCA-TCGA surv.cv_glmnet            cv         3    0.5 0.2651273
+<pre><code>     task_id     learner_id resampling_id iteration   cindex       ibs
+      &lt;char&gt;         &lt;char&gt;        &lt;char&gt;     &lt;int&gt;    &lt;num&gt;     &lt;num&gt;
+1: BRCA-TCGA surv.cv_glmnet            cv         1 0.510439 0.1304813
+2: BRCA-TCGA surv.cv_glmnet            cv         2 0.500000 0.2799500
+3: BRCA-TCGA surv.cv_glmnet            cv         3 0.500000 0.2004451
 Hidden columns: task, learner, resampling, prediction</code></pre>
 </div>
 </div>
@@ -1005,77 +1035,77 @@ Hidden columns: task, learner, resampling, prediction</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>rr_coxboost <span class="ot">=</span> <span class="fu">resample</span>(</span>
-<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">task =</span> task_tcga,</span>
-<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> lrn_coxboost,</span>
-<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> resampling</span>
-<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>rr_coxboost <span class="ot">=</span> <span class="fu">resample</span>(</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">task =</span> task_tcga,</span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> lrn_coxboost,</span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> resampling</span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [18:11:17.041] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [18:11:17.544] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [18:11:18.158] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [12:50:36.207] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:50:36.850] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:50:37.429] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>rr_ranger <span class="ot">=</span> <span class="fu">resample</span>(</span>
-<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">task =</span> task_tcga,</span>
-<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> lrn_ranger,</span>
-<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> resampling</span>
-<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>rr_ranger <span class="ot">=</span> <span class="fu">resample</span>(</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">task =</span> task_tcga,</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> lrn_ranger,</span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> resampling</span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [18:11:18.613] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [18:11:20.771] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [18:11:23.066] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [12:50:38.182] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:50:41.289] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:50:44.034] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>rr_aorsf <span class="ot">=</span> <span class="fu">resample</span>(</span>
-<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">task =</span> task_tcga,</span>
-<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> lrn_aorsf,</span>
-<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> resampling</span>
-<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>rr_aorsf <span class="ot">=</span> <span class="fu">resample</span>(</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">task =</span> task_tcga,</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> lrn_aorsf,</span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> resampling</span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [18:11:25.549] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [18:11:25.637] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [18:11:25.677] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [12:50:47.287] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:50:47.398] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:50:47.451] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>rr_coxboost<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>rr_coxboost<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     task_id    learner_id resampling_id iteration    cindex       ibs
       &lt;char&gt;        &lt;char&gt;        &lt;char&gt;     &lt;int&gt;     &lt;num&gt;     &lt;num&gt;
-1: BRCA-TCGA surv.coxboost            cv         1 0.6715095 0.2181875
-2: BRCA-TCGA surv.coxboost            cv         2 0.5843462 0.1397133
-3: BRCA-TCGA surv.coxboost            cv         3 0.5756824 0.2642506
+1: BRCA-TCGA surv.coxboost            cv         1 0.5342340 0.1572601
+2: BRCA-TCGA surv.coxboost            cv         2 0.6904511 0.2924077
+3: BRCA-TCGA surv.coxboost            cv         3 0.6965025 0.1961894
 Hidden columns: task, learner, resampling, prediction</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>rr_ranger<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>rr_ranger<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     task_id  learner_id resampling_id iteration    cindex       ibs
       &lt;char&gt;      &lt;char&gt;        &lt;char&gt;     &lt;int&gt;     &lt;num&gt;     &lt;num&gt;
-1: BRCA-TCGA surv.ranger            cv         1 0.6609037 0.2281387
-2: BRCA-TCGA surv.ranger            cv         2 0.6891946 0.1394615
-3: BRCA-TCGA surv.ranger            cv         3 0.5599183 0.2884375
+1: BRCA-TCGA surv.ranger            cv         1 0.5965613 0.1784851
+2: BRCA-TCGA surv.ranger            cv         2 0.6519388 0.2638147
+3: BRCA-TCGA surv.ranger            cv         3 0.6072805 0.2128354
 Hidden columns: task, learner, resampling, prediction</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>rr_aorsf<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>rr_aorsf<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     task_id learner_id resampling_id iteration    cindex       ibs
       &lt;char&gt;     &lt;char&gt;        &lt;char&gt;     &lt;int&gt;     &lt;num&gt;     &lt;num&gt;
-1: BRCA-TCGA surv.aorsf            cv         1 0.6649716 0.2139267
-2: BRCA-TCGA surv.aorsf            cv         2 0.6576733 0.1297630
-3: BRCA-TCGA surv.aorsf            cv         3 0.5644432 0.2737022
+1: BRCA-TCGA surv.aorsf            cv         1 0.5784464 0.1480976
+2: BRCA-TCGA surv.aorsf            cv         2 0.6875495 0.2612929
+3: BRCA-TCGA surv.aorsf            cv         3 0.6519629 0.2144734
 Hidden columns: task, learner, resampling, prediction</code></pre>
 </div>
 </div>
@@ -1083,139 +1113,282 @@ Hidden columns: task, learner, resampling, prediction</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>rr_glmnet<span class="sc">$</span><span class="fu">aggregate</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>rr_glmnet<span class="sc">$</span><span class="fu">aggregate</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   cindex       ibs 
-0.5000000 0.1910886 </code></pre>
+0.5034797 0.2036254 </code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>rr_coxboost<span class="sc">$</span><span class="fu">aggregate</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>rr_coxboost<span class="sc">$</span><span class="fu">aggregate</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   cindex       ibs 
-0.6105127 0.2073838 </code></pre>
+0.6403959 0.2152857 </code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>rr_ranger<span class="sc">$</span><span class="fu">aggregate</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a>rr_ranger<span class="sc">$</span><span class="fu">aggregate</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   cindex       ibs 
-0.6366722 0.2186793 </code></pre>
+0.6185935 0.2183784 </code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>rr_aorsf<span class="sc">$</span><span class="fu">aggregate</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>rr_aorsf<span class="sc">$</span><span class="fu">aggregate</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   cindex       ibs 
-0.6290294 0.2057973 </code></pre>
+0.6393196 0.2079546 </code></pre>
 </div>
 </div>
-<p>Now, for a quick example on a single dataset this approach is goon enough, but a bit cumbersome. What we essentially did here was a naive benchmarking of the learners on the task — something <code>mlr3</code> has dedicated tools for!</p>
-<p>We can perform the same procedure by first defining a <em>benchmark design</em> of one or more tasks and at least two learners like so:</p>
+<p>Of course in practice we want to tune these learners for optimal performance. Tuning can be quite a complex topic, but <code>mlr3</code> makes it relatively simple with the <code>auto_tuner</code> approach. Without going into too much detail about the theory, for tuning we need:</p>
+<ul>
+<li>A learner to tune, with information on which parameters to tune in which range (the search space)</li>
+<li>A strategy (<code>tuner</code>), such as random search, grid search, or more advanced options, which defines how we search for new parameter values to try</li>
+<li>A resampling strategy to evaluate performance during tuning</li>
+<li>A tuning measure top optimize for</li>
+<li>A stopping criterion, e.g.&nbsp;stopping after 100 evaluations</li>
+</ul>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">=</span> <span class="fu">benchmark_grid</span>(</span>
-<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">tasks =</span> task_tcga,</span>
-<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learners =</span> <span class="fu">list</span>(lrn_glmnet, lrn_ranger, lrn_aorsf, lrn_coxboost),</span>
-<span id="cb87-4"><a href="#cb87-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resamplings =</span> resampling</span>
-<span id="cb87-5"><a href="#cb87-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb87-6"><a href="#cb87-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb87-7"><a href="#cb87-7" aria-hidden="true" tabindex="-1"></a>design</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>at_glmnet <span class="ot">=</span> <span class="fu">auto_tuner</span>(</span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fu">to_tune</span>(<span class="dv">0</span>, <span class="dv">1</span>)),</span>
+<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">tuner =</span> <span class="fu">tnr</span>(<span class="st">"grid_search"</span>),</span>
+<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> <span class="fu">rsmp</span>(<span class="st">"cv"</span>, <span class="at">folds =</span> <span class="dv">3</span>),</span>
+<span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">measure =</span> <span class="fu">msr</span>(<span class="st">"surv.cindex"</span>),</span>
+<span id="cb88-6"><a href="#cb88-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">term_evals =</span> <span class="dv">100</span></span>
+<span id="cb88-7"><a href="#cb88-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>        task        learner resampling
-      &lt;char&gt;         &lt;char&gt;     &lt;char&gt;
-1: BRCA-TCGA surv.cv_glmnet         cv
-2: BRCA-TCGA    surv.ranger         cv
-3: BRCA-TCGA     surv.aorsf         cv
-4: BRCA-TCGA  surv.coxboost         cv</code></pre>
 </div>
-</div>
-<p>To perform the benchmark, we use the aptly named <code>benchmark()</code> function, which will perform the necessary resampling iterations and store the results for us:</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>INFO  [18:11:26.869] [mlr3] Running benchmark with 12 resampling iterations
-INFO  [18:11:26.872] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [18:11:27.865] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [18:11:28.696] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [18:11:29.706] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [18:11:31.947] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [18:11:34.185] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [18:11:36.533] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [18:11:36.567] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [18:11:36.602] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [18:11:36.641] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [18:11:37.238] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [18:11:37.666] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [18:11:38.100] [mlr3] Finished benchmark</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;BenchmarkResult&gt; of 12 rows with 4 resampling runs
- nr   task_id     learner_id resampling_id iters warnings errors
-  1 BRCA-TCGA surv.cv_glmnet            cv     3        0      0
-  2 BRCA-TCGA    surv.ranger            cv     3        0      0
-  3 BRCA-TCGA     surv.aorsf            cv     3        0      0
-  4 BRCA-TCGA  surv.coxboost            cv     3        0      0</code></pre>
-</div>
-</div>
-<p>When we <code>$score()</code> or <code>$aggregate()</code> the benchmark result, we should get the same exact scores as before because we used the instantiated resampling from earlier, meaning each elarner again saw the same data:</p>
+<p>We can then try this out on the full dataset like so:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>bmr<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>at_glmnet<span class="sc">$</span><span class="fu">train</span>(task_tcga)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>       nr   task_id     learner_id resampling_id iteration    cindex       ibs
-    &lt;int&gt;    &lt;char&gt;         &lt;char&gt;        &lt;char&gt;     &lt;int&gt;     &lt;num&gt;     &lt;num&gt;
- 1:     1 BRCA-TCGA surv.cv_glmnet            cv         1 0.5000000 0.1756614
- 2:     1 BRCA-TCGA surv.cv_glmnet            cv         2 0.5000000 0.1324771
- 3:     1 BRCA-TCGA surv.cv_glmnet            cv         3 0.5000000 0.2651273
- 4:     2 BRCA-TCGA    surv.ranger            cv         1 0.6834229 0.2226761
- 5:     2 BRCA-TCGA    surv.ranger            cv         2 0.6858555 0.1402617
- 6:     2 BRCA-TCGA    surv.ranger            cv         3 0.5527660 0.2897589
- 7:     3 BRCA-TCGA     surv.aorsf            cv         1 0.6579980 0.2097476
- 8:     3 BRCA-TCGA     surv.aorsf            cv         2 0.6407106 0.1320248
- 9:     3 BRCA-TCGA     surv.aorsf            cv         3 0.5804992 0.2769839
-10:     4 BRCA-TCGA  surv.coxboost            cv         1 0.6715095 0.2181875
-11:     4 BRCA-TCGA  surv.coxboost            cv         2 0.5843462 0.1397133
-12:     4 BRCA-TCGA  surv.coxboost            cv         3 0.5756824 0.2642506
-Hidden columns: uhash, task, learner, resampling, prediction</code></pre>
+<pre><code>INFO  [12:50:49.145] [bbotk] Starting to optimize 1 parameter(s) with '&lt;OptimizerBatchGridSearch&gt;' and '&lt;TerminatorEvals&gt; [n_evals=100, k=0]'
+INFO  [12:50:49.152] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:50:49.157] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:50:49.161] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:50:50.645] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:50:51.763] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:50:52.890] [mlr3] Finished benchmark
+INFO  [12:50:52.913] [bbotk] Result of batch 1:
+INFO  [12:50:52.914] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [12:50:52.914] [bbotk]  0.5555556   0.5520563        0      0            3.712
+INFO  [12:50:52.914] [bbotk]                                 uhash
+INFO  [12:50:52.914] [bbotk]  ef79127d-f825-4676-a646-a123947bf6fe
+INFO  [12:50:52.916] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:50:52.920] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:50:52.923] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:50:54.191] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:50:55.314] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:50:56.429] [mlr3] Finished benchmark
+INFO  [12:50:56.452] [bbotk] Result of batch 2:
+INFO  [12:50:56.454] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [12:50:56.454] [bbotk]  0.8888889   0.5520563        0      0            3.488
+INFO  [12:50:56.454] [bbotk]                                 uhash
+INFO  [12:50:56.454] [bbotk]  1b4037a0-a129-4798-b820-e8889621a2db
+INFO  [12:50:56.455] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:50:56.459] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:50:56.463] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:50:57.747] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:50:58.903] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:51:00.048] [mlr3] Finished benchmark
+INFO  [12:51:00.066] [bbotk] Result of batch 3:
+INFO  [12:51:00.067] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [12:51:00.067] [bbotk]  0.7777778         0.5        0      0            3.567
+INFO  [12:51:00.067] [bbotk]                                 uhash
+INFO  [12:51:00.067] [bbotk]  1c8cc644-a66d-42b4-8def-162f32a0b4e7
+INFO  [12:51:00.069] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:51:00.073] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:51:00.076] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:51:01.370] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:51:02.482] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:51:03.559] [mlr3] Finished benchmark
+INFO  [12:51:03.582] [bbotk] Result of batch 4:
+INFO  [12:51:03.583] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [12:51:03.583] [bbotk]  0.6666667   0.5496212        0      0            3.465
+INFO  [12:51:03.583] [bbotk]                                 uhash
+INFO  [12:51:03.583] [bbotk]  0c3bffb9-e6b5-4635-8f44-a0a599ce6ff4
+INFO  [12:51:03.585] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:51:03.589] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:51:03.593] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:51:05.165] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:51:06.420] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:51:07.671] [mlr3] Finished benchmark
+INFO  [12:51:07.689] [bbotk] Result of batch 5:
+INFO  [12:51:07.690] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [12:51:07.690] [bbotk]  0.1111111         0.5        0      0            4.056
+INFO  [12:51:07.690] [bbotk]                                 uhash
+INFO  [12:51:07.690] [bbotk]  20312cb7-4503-4fce-b499-664a6fbfb2be
+INFO  [12:51:07.692] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:51:07.696] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:51:07.700] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:51:08.942] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:51:10.087] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:51:11.141] [mlr3] Finished benchmark
+INFO  [12:51:11.159] [bbotk] Result of batch 6:
+INFO  [12:51:11.161] [bbotk]  alpha surv.cindex warnings errors runtime_learners
+INFO  [12:51:11.161] [bbotk]      1         0.5        0      0            3.424
+INFO  [12:51:11.161] [bbotk]                                 uhash
+INFO  [12:51:11.161] [bbotk]  42c32319-bbef-4966-ad59-c54b4a060964
+INFO  [12:51:11.162] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:51:11.167] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:51:11.170] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:51:12.329] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:51:13.247] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:51:14.165] [mlr3] Finished benchmark
+INFO  [12:51:14.183] [bbotk] Result of batch 7:
+INFO  [12:51:14.184] [bbotk]  alpha surv.cindex warnings errors runtime_learners
+INFO  [12:51:14.184] [bbotk]      0   0.5921736        0      0            2.978
+INFO  [12:51:14.184] [bbotk]                                 uhash
+INFO  [12:51:14.184] [bbotk]  cd43cece-d2bd-4800-a147-a9dd55694ed0
+INFO  [12:51:14.186] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:51:14.190] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:51:14.194] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:51:15.568] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:51:16.726] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:51:17.924] [mlr3] Finished benchmark
+INFO  [12:51:17.946] [bbotk] Result of batch 8:
+INFO  [12:51:17.948] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [12:51:17.948] [bbotk]  0.3333333         0.5        0      0            3.713
+INFO  [12:51:17.948] [bbotk]                                 uhash
+INFO  [12:51:17.948] [bbotk]  ecca972a-25cc-4e11-a96b-e2a2cdfdd8ee
+INFO  [12:51:17.949] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:51:17.954] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:51:17.957] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:51:19.261] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:51:20.445] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:51:21.547] [mlr3] Finished benchmark
+INFO  [12:51:21.570] [bbotk] Result of batch 9:
+INFO  [12:51:21.571] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [12:51:21.571] [bbotk]  0.4444444        0.55        0      0            3.573
+INFO  [12:51:21.571] [bbotk]                                 uhash
+INFO  [12:51:21.571] [bbotk]  92fa780e-7e6b-45c9-8417-9c3cb0dca00f
+INFO  [12:51:21.573] [bbotk] Evaluating 1 configuration(s)
+INFO  [12:51:21.578] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [12:51:21.581] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [12:51:22.912] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [12:51:24.149] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [12:51:25.327] [mlr3] Finished benchmark
+INFO  [12:51:25.346] [bbotk] Result of batch 10:
+INFO  [12:51:25.348] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [12:51:25.348] [bbotk]  0.2222222   0.5520563        0      0            3.729
+INFO  [12:51:25.348] [bbotk]                                 uhash
+INFO  [12:51:25.348] [bbotk]  2c98e191-702b-4737-ae39-71b01308d456
+INFO  [12:51:25.356] [bbotk] Finished optimizing after 10 evaluation(s)
+INFO  [12:51:25.357] [bbotk] Result:
+INFO  [12:51:25.358] [bbotk]  alpha learner_param_vals  x_domain surv.cindex
+INFO  [12:51:25.358] [bbotk]  &lt;num&gt;             &lt;list&gt;    &lt;list&gt;       &lt;num&gt;
+INFO  [12:51:25.358] [bbotk]      0          &lt;list[1]&gt; &lt;list[1]&gt;   0.5921736</code></pre>
+</div>
+</div>
+<p>We can see all evaluated parameter combinations in the <code>$tuning_instance</code> and the best result in <code>$tuning_result</code></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>at_glmnet<span class="sc">$</span>tuning_instance</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;TuningInstanceBatchSingleCrit&gt;
+* State:  Optimized
+* Objective: &lt;ObjectiveTuningBatch:surv.cv_glmnet_on_BRCA-TCGA&gt;
+* Search Space:
+       id    class lower upper nlevels
+   &lt;char&gt;   &lt;char&gt; &lt;num&gt; &lt;num&gt;   &lt;num&gt;
+1:  alpha ParamDbl     0     1     Inf
+* Terminator: &lt;TerminatorEvals&gt;
+* Result:
+   alpha surv.cindex
+   &lt;num&gt;       &lt;num&gt;
+1:     0   0.5921736
+* Archive:
+        alpha surv.cindex
+        &lt;num&gt;       &lt;num&gt;
+ 1: 0.5555556   0.5520563
+ 2: 0.8888889   0.5520563
+ 3: 0.7777778   0.5000000
+ 4: 0.6666667   0.5496212
+ 5: 0.1111111   0.5000000
+ 6: 1.0000000   0.5000000
+ 7: 0.0000000   0.5921736
+ 8: 0.3333333   0.5000000
+ 9: 0.4444444   0.5500000
+10: 0.2222222   0.5520563</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>bmr<span class="sc">$</span><span class="fu">aggregate</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>at_glmnet<span class="sc">$</span>tuning_result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>      nr   task_id     learner_id resampling_id iters    cindex       ibs
-   &lt;int&gt;    &lt;char&gt;         &lt;char&gt;        &lt;char&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;
-1:     1 BRCA-TCGA surv.cv_glmnet            cv     3 0.5000000 0.1910886
-2:     2 BRCA-TCGA    surv.ranger            cv     3 0.6406815 0.2175656
-3:     3 BRCA-TCGA     surv.aorsf            cv     3 0.6264026 0.2062521
-4:     4 BRCA-TCGA  surv.coxboost            cv     3 0.6105127 0.2073838
-Hidden columns: resample_result</code></pre>
+<pre><code>   alpha learner_param_vals  x_domain surv.cindex
+   &lt;num&gt;             &lt;list&gt;    &lt;list&gt;       &lt;num&gt;
+1:     0          &lt;list[1]&gt; &lt;list[1]&gt;   0.5921736</code></pre>
 </div>
+</div>
+<p>We get a better result than 0.5 now, but note <em>we used all of the data</em> now, so while this would be the approach we could use to find a model for new data, right now we want to compare our learners fairly! That means: <em>Nested resampling</em>, where we use resampling for tuning, and for evaluation in two layers.</p>
+<p>In this step, we simplify the <code>resample()</code> steps using <code>benchmark()</code>, and we’ll also tune some of the learners.</p>
+<p>We start by first defining our learners with tuning, using <code>cv_coxboost</code> to tune itself without the <code>auto_tuner</code> and tuning <code>glmnet</code> similar to before, but we’ll set small budgets to keep the runtime of this example code managable:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>at_glmnet <span class="ot">=</span> <span class="fu">auto_tuner</span>(</span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fu">to_tune</span>(<span class="dv">0</span>, <span class="dv">1</span>)),</span>
+<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">tuner =</span> <span class="fu">tnr</span>(<span class="st">"grid_search"</span>),</span>
+<span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> <span class="fu">rsmp</span>(<span class="st">"cv"</span>, <span class="at">folds =</span> <span class="dv">3</span>),</span>
+<span id="cb95-5"><a href="#cb95-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">measure =</span> <span class="fu">msr</span>(<span class="st">"surv.cindex"</span>),</span>
+<span id="cb95-6"><a href="#cb95-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">term_evals =</span> <span class="dv">25</span></span>
+<span id="cb95-7"><a href="#cb95-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb95-8"><a href="#cb95-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-9"><a href="#cb95-9" aria-hidden="true" tabindex="-1"></a><span class="co"># For CoxBoost's optimCoxBoostPenalty, iter.max is analogous to term_evals </span></span>
+<span id="cb95-10"><a href="#cb95-10" aria-hidden="true" tabindex="-1"></a>lrn_cvcoxboost <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_coxboost"</span>, <span class="at">penalty =</span> <span class="st">"optimCoxBoostPenalty"</span>, <span class="at">iter.max =</span> <span class="dv">25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The we create a <em>benchmark design</em> of one or more tasks and at least two learners like so:</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">=</span> <span class="fu">benchmark_grid</span>(</span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">tasks =</span> task_tcga,</span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learners =</span> <span class="fu">list</span>(at_glmnet, lrn_ranger, lrn_aorsf, lrn_cvcoxboost),</span>
+<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resamplings =</span> resampling</span>
+<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a>design</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>        task              learner resampling
+      &lt;char&gt;               &lt;char&gt;     &lt;char&gt;
+1: BRCA-TCGA surv.cv_glmnet.tuned         cv
+2: BRCA-TCGA          surv.ranger         cv
+3: BRCA-TCGA           surv.aorsf         cv
+4: BRCA-TCGA     surv.cv_coxboost         cv</code></pre>
+</div>
+</div>
+<p>To perform the benchmark, we use the aptly named <code>benchmark()</code> function, which will perform the necessary resampling iterations and store the results for us — this will take a moment!</p>
+<p>When we <code>$score()</code> or <code>$aggregate()</code> the benchmark result, we should get the same exact scores as before for the untuned learners because we used the instantiated resampling from earlier, meaning each learner again saw the same data — <code>glmnet</code> and <code>coxboost</code> however should do better because now we spent time tuning them!</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bmr$score(measures)</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>bmr<span class="sc">$</span><span class="fu">aggregate</span>(<span class="fu">msr</span>(<span class="st">"surv.cindex"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 <p>We can also visualize the results — see <code>?autoplot.BenchmarkResult</code> for more options:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bmr, <span class="at">type =</span> <span class="st">"boxplot"</span>, <span class="at">measure =</span> <span class="fu">msr</span>(<span class="st">"surv.brier"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bmr, <span class="at">type =</span> <span class="st">"boxplot"</span>, <span class="at">measure =</span> <span class="fu">msr</span>(<span class="st">"surv.cindex"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/bmr-box-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
 </div>
 <p>From our quick tests, which learner now seems to have done the best? Given that we used these learners more or less off the shelf without tuning, we should not put too much weight on these results, but it’s a good starting point for further exploration!</p>
-<p>Tuning is a complex topic and you can learn more about it in the <a href="https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html">mlr3book chapter</a>, but unfortunately we don’t have time to cover it here!</p>
+<p>Tuning is a complex topic we barely scratched the surface of, but you can learn more about it in the <a href="https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html">mlr3book chapter</a>!</p>
 </section>
 <section id="benchmarking-with-multiple-datasets" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="benchmarking-with-multiple-datasets">Benchmarking with multiple datasets</h2>
@@ -1249,15 +1422,15 @@ Teaching Aims
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a>tasks <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"actg"</span>),</span>
-<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"gbcs"</span>),</span>
-<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"grace"</span>),</span>
-<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"lung"</span>),</span>
-<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"mgus"</span>)</span>
-<span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb96-8"><a href="#cb96-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb96-9"><a href="#cb96-9" aria-hidden="true" tabindex="-1"></a>tasks</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>tasks <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"actg"</span>),</span>
+<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"gbcs"</span>),</span>
+<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"grace"</span>),</span>
+<span id="cb100-5"><a href="#cb100-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"lung"</span>),</span>
+<span id="cb100-6"><a href="#cb100-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tsk</span>(<span class="st">"mgus"</span>)</span>
+<span id="cb100-7"><a href="#cb100-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb100-8"><a href="#cb100-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb100-9"><a href="#cb100-9" aria-hidden="true" tabindex="-1"></a>tasks</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
@@ -1307,15 +1480,15 @@ Teaching Aims
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a>preproc <span class="ot">=</span> <span class="fu">po</span>(<span class="st">"encode"</span>, <span class="at">method =</span> <span class="st">"treatment"</span>)</span>
-<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>learners <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb98-4"><a href="#cb98-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cox =</span> <span class="fu">as_learner</span>(preproc <span class="sc">%&gt;&gt;%</span> <span class="fu">lrn</span>(<span class="st">"surv.coxph"</span>,<span class="at">id =</span> <span class="st">"cph"</span>)),</span>
-<span id="cb98-5"><a href="#cb98-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">glmnet =</span> <span class="fu">as_learner</span>(preproc <span class="sc">%&gt;&gt;%</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>)),</span>
-<span id="cb98-6"><a href="#cb98-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ranger =</span> <span class="fu">lrn</span>(<span class="st">"surv.ranger"</span>, <span class="at">num.trees =</span> <span class="dv">100</span>),</span>
-<span id="cb98-7"><a href="#cb98-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">aorsf =</span> <span class="fu">lrn</span>(<span class="st">"surv.aorsf"</span>, <span class="at">n_tree =</span> <span class="dv">100</span>),</span>
-<span id="cb98-8"><a href="#cb98-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">coxboost =</span> <span class="fu">as_learner</span>(preproc <span class="sc">%&gt;&gt;%</span> <span class="fu">lrn</span>(<span class="st">"surv.coxboost"</span>, <span class="at">penalty =</span> <span class="dv">100</span>))</span>
-<span id="cb98-9"><a href="#cb98-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a>preproc <span class="ot">=</span> <span class="fu">po</span>(<span class="st">"encode"</span>, <span class="at">method =</span> <span class="st">"treatment"</span>)</span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a>learners <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cox =</span> <span class="fu">as_learner</span>(preproc <span class="sc">%&gt;&gt;%</span> <span class="fu">lrn</span>(<span class="st">"surv.coxph"</span>,<span class="at">id =</span> <span class="st">"cph"</span>)),</span>
+<span id="cb102-5"><a href="#cb102-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">glmnet =</span> <span class="fu">as_learner</span>(preproc <span class="sc">%&gt;&gt;%</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>)),</span>
+<span id="cb102-6"><a href="#cb102-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ranger =</span> <span class="fu">lrn</span>(<span class="st">"surv.ranger"</span>, <span class="at">num.trees =</span> <span class="dv">100</span>),</span>
+<span id="cb102-7"><a href="#cb102-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">aorsf =</span> <span class="fu">lrn</span>(<span class="st">"surv.aorsf"</span>, <span class="at">n_tree =</span> <span class="dv">100</span>),</span>
+<span id="cb102-8"><a href="#cb102-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">coxboost =</span> <span class="fu">as_learner</span>(preproc <span class="sc">%&gt;&gt;%</span> <span class="fu">lrn</span>(<span class="st">"surv.coxboost"</span>, <span class="at">penalty =</span> <span class="dv">100</span>))</span>
+<span id="cb102-9"><a href="#cb102-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>A small convenience thing we can do here is to set IDs for the learners, which will make the output of further steps more readable:</p>
@@ -1341,13 +1514,13 @@ $coxboost
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">=</span> <span class="fu">benchmark_grid</span>(</span>
-<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">tasks =</span> tasks,</span>
-<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learners =</span> learners,</span>
-<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resamplings =</span> <span class="fu">rsmp</span>(<span class="st">"cv"</span>, <span class="at">folds =</span> <span class="dv">3</span>)</span>
-<span id="cb100-5"><a href="#cb100-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb100-6"><a href="#cb100-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb100-7"><a href="#cb100-7" aria-hidden="true" tabindex="-1"></a>design</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a>design <span class="ot">=</span> <span class="fu">benchmark_grid</span>(</span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">tasks =</span> tasks,</span>
+<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">learners =</span> learners,</span>
+<span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resamplings =</span> <span class="fu">rsmp</span>(<span class="st">"cv"</span>, <span class="at">folds =</span> <span class="dv">3</span>)</span>
+<span id="cb104-5"><a href="#cb104-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb104-6"><a href="#cb104-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb104-7"><a href="#cb104-7" aria-hidden="true" tabindex="-1"></a>design</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>      task  learner resampling
@@ -1382,125 +1555,125 @@ $coxboost
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [18:11:40.276] [mlr3] Running benchmark with 75 resampling iterations
-INFO  [18:11:40.278] [mlr3] Applying learner 'cox' on task 'actg' (iter 1/3)
-INFO  [18:11:40.523] [mlr3] Applying learner 'cox' on task 'actg' (iter 2/3)
-INFO  [18:11:40.575] [mlr3] Applying learner 'cox' on task 'actg' (iter 3/3)
-INFO  [18:11:40.627] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 1/3)
-INFO  [18:11:40.932] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 2/3)
-INFO  [18:11:41.259] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 3/3)
-INFO  [18:11:41.576] [mlr3] Applying learner 'ranger' on task 'actg' (iter 1/3)
-INFO  [18:11:41.734] [mlr3] Applying learner 'ranger' on task 'actg' (iter 2/3)
-INFO  [18:11:41.913] [mlr3] Applying learner 'ranger' on task 'actg' (iter 3/3)
-INFO  [18:11:42.079] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 1/3)
-INFO  [18:11:42.110] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 2/3)
-INFO  [18:11:42.139] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 3/3)
-INFO  [18:11:42.166] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 1/3)
-INFO  [18:11:42.430] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 2/3)
-INFO  [18:11:42.730] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 3/3)
-INFO  [18:11:42.978] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 1/3)
-INFO  [18:11:43.017] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 2/3)
-INFO  [18:11:43.050] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 3/3)
-INFO  [18:11:43.083] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 1/3)
-INFO  [18:11:43.190] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 2/3)
-INFO  [18:11:43.280] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 3/3)
-INFO  [18:11:43.380] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 1/3)
-INFO  [18:11:43.532] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 2/3)
-INFO  [18:11:43.686] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 3/3)
-INFO  [18:11:43.859] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 1/3)
-INFO  [18:11:43.884] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 2/3)
-INFO  [18:11:43.908] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 3/3)
-INFO  [18:11:43.938] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 1/3)
-INFO  [18:11:44.324] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 2/3)
-INFO  [18:11:44.511] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 3/3)
-INFO  [18:11:44.887] [mlr3] Applying learner 'cox' on task 'grace' (iter 1/3)
-INFO  [18:11:44.918] [mlr3] Applying learner 'cox' on task 'grace' (iter 2/3)
-INFO  [18:11:44.951] [mlr3] Applying learner 'cox' on task 'grace' (iter 3/3)
-INFO  [18:11:44.983] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 1/3)
-INFO  [18:11:45.120] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 2/3)
-INFO  [18:11:45.266] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 3/3)
-INFO  [18:11:45.415] [mlr3] Applying learner 'ranger' on task 'grace' (iter 1/3)
-INFO  [18:11:45.635] [mlr3] Applying learner 'ranger' on task 'grace' (iter 2/3)
-INFO  [18:11:45.845] [mlr3] Applying learner 'ranger' on task 'grace' (iter 3/3)
-INFO  [18:11:46.058] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 1/3)
-INFO  [18:11:46.086] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 2/3)
-INFO  [18:11:46.116] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 3/3)
-INFO  [18:11:46.146] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 1/3)
-INFO  [18:11:46.514] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 2/3)
-INFO  [18:11:46.838] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 3/3)
-INFO  [18:11:47.169] [mlr3] Applying learner 'cox' on task 'lung' (iter 1/3)
-INFO  [18:11:47.211] [mlr3] Applying learner 'cox' on task 'lung' (iter 2/3)
-INFO  [18:11:47.253] [mlr3] Applying learner 'cox' on task 'lung' (iter 3/3)
-INFO  [18:11:47.307] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 1/3)
-INFO  [18:11:47.383] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 2/3)
-INFO  [18:11:47.456] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 3/3)
-INFO  [18:11:47.717] [mlr3] Applying learner 'ranger' on task 'lung' (iter 1/3)
-INFO  [18:11:47.753] [mlr3] Applying learner 'ranger' on task 'lung' (iter 2/3)
-INFO  [18:11:47.789] [mlr3] Applying learner 'ranger' on task 'lung' (iter 3/3)
-INFO  [18:11:47.827] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 1/3)
-INFO  [18:11:47.844] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 2/3)
-INFO  [18:11:47.862] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 3/3)
-INFO  [18:11:47.879] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 1/3)
-INFO  [18:11:47.973] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 2/3)
-INFO  [18:11:48.080] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 3/3)
-INFO  [18:11:48.190] [mlr3] Applying learner 'cox' on task 'mgus' (iter 1/3)
-INFO  [18:11:48.232] [mlr3] Applying learner 'cox' on task 'mgus' (iter 2/3)
-INFO  [18:11:48.274] [mlr3] Applying learner 'cox' on task 'mgus' (iter 3/3)
-INFO  [18:11:48.316] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 1/3)
-INFO  [18:11:48.394] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 2/3)
-INFO  [18:11:48.462] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 3/3)
-INFO  [18:11:48.531] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 1/3)
-INFO  [18:11:48.575] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 2/3)
-INFO  [18:11:48.622] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 3/3)
-INFO  [18:11:48.667] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 1/3)
-INFO  [18:11:48.687] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 2/3)
-INFO  [18:11:48.707] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 3/3)
-INFO  [18:11:48.733] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 1/3)
-INFO  [18:11:48.869] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 2/3)
-INFO  [18:11:49.011] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 3/3)</code></pre>
+<pre><code>INFO  [12:51:27.069] [mlr3] Running benchmark with 75 resampling iterations
+INFO  [12:51:27.072] [mlr3] Applying learner 'cox' on task 'actg' (iter 1/3)
+INFO  [12:51:27.343] [mlr3] Applying learner 'cox' on task 'actg' (iter 2/3)
+INFO  [12:51:27.414] [mlr3] Applying learner 'cox' on task 'actg' (iter 3/3)
+INFO  [12:51:27.484] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 1/3)
+INFO  [12:51:27.940] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 2/3)
+INFO  [12:51:28.336] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 3/3)
+INFO  [12:51:28.781] [mlr3] Applying learner 'ranger' on task 'actg' (iter 1/3)
+INFO  [12:51:28.997] [mlr3] Applying learner 'ranger' on task 'actg' (iter 2/3)
+INFO  [12:51:29.213] [mlr3] Applying learner 'ranger' on task 'actg' (iter 3/3)
+INFO  [12:51:29.439] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 1/3)
+INFO  [12:51:29.476] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 2/3)
+INFO  [12:51:29.510] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 3/3)
+INFO  [12:51:29.543] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 1/3)
+INFO  [12:51:29.887] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 2/3)
+INFO  [12:51:30.228] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 3/3)
+INFO  [12:51:30.567] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 1/3)
+INFO  [12:51:30.617] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 2/3)
+INFO  [12:51:30.661] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 3/3)
+INFO  [12:51:30.715] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 1/3)
+INFO  [12:51:30.850] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 2/3)
+INFO  [12:51:30.971] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 3/3)
+INFO  [12:51:31.116] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 1/3)
+INFO  [12:51:31.324] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 2/3)
+INFO  [12:51:31.535] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 3/3)
+INFO  [12:51:31.737] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 1/3)
+INFO  [12:51:31.767] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 2/3)
+INFO  [12:51:31.796] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 3/3)
+INFO  [12:51:31.825] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 1/3)
+INFO  [12:51:32.277] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 2/3)
+INFO  [12:51:32.534] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 3/3)
+INFO  [12:51:32.778] [mlr3] Applying learner 'cox' on task 'grace' (iter 1/3)
+INFO  [12:51:32.826] [mlr3] Applying learner 'cox' on task 'grace' (iter 2/3)
+INFO  [12:51:32.867] [mlr3] Applying learner 'cox' on task 'grace' (iter 3/3)
+INFO  [12:51:32.908] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 1/3)
+INFO  [12:51:33.099] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 2/3)
+INFO  [12:51:33.289] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 3/3)
+INFO  [12:51:33.465] [mlr3] Applying learner 'ranger' on task 'grace' (iter 1/3)
+INFO  [12:51:33.735] [mlr3] Applying learner 'ranger' on task 'grace' (iter 2/3)
+INFO  [12:51:34.000] [mlr3] Applying learner 'ranger' on task 'grace' (iter 3/3)
+INFO  [12:51:34.251] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 1/3)
+INFO  [12:51:34.289] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 2/3)
+INFO  [12:51:34.326] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 3/3)
+INFO  [12:51:34.365] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 1/3)
+INFO  [12:51:35.011] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 2/3)
+INFO  [12:51:35.668] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 3/3)
+INFO  [12:51:36.071] [mlr3] Applying learner 'cox' on task 'lung' (iter 1/3)
+INFO  [12:51:36.129] [mlr3] Applying learner 'cox' on task 'lung' (iter 2/3)
+INFO  [12:51:36.187] [mlr3] Applying learner 'cox' on task 'lung' (iter 3/3)
+INFO  [12:51:36.245] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 1/3)
+INFO  [12:51:36.348] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 2/3)
+INFO  [12:51:36.441] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 3/3)
+INFO  [12:51:36.534] [mlr3] Applying learner 'ranger' on task 'lung' (iter 1/3)
+INFO  [12:51:36.580] [mlr3] Applying learner 'ranger' on task 'lung' (iter 2/3)
+INFO  [12:51:36.626] [mlr3] Applying learner 'ranger' on task 'lung' (iter 3/3)
+INFO  [12:51:36.673] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 1/3)
+INFO  [12:51:36.695] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 2/3)
+INFO  [12:51:36.716] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 3/3)
+INFO  [12:51:36.738] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 1/3)
+INFO  [12:51:36.874] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 2/3)
+INFO  [12:51:37.008] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 3/3)
+INFO  [12:51:37.157] [mlr3] Applying learner 'cox' on task 'mgus' (iter 1/3)
+INFO  [12:51:37.215] [mlr3] Applying learner 'cox' on task 'mgus' (iter 2/3)
+INFO  [12:51:37.273] [mlr3] Applying learner 'cox' on task 'mgus' (iter 3/3)
+INFO  [12:51:37.331] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 1/3)
+INFO  [12:51:37.442] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 2/3)
+INFO  [12:51:37.605] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 3/3)
+INFO  [12:51:37.706] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 1/3)
+INFO  [12:51:37.764] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 2/3)
+INFO  [12:51:37.822] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 3/3)
+INFO  [12:51:37.883] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 1/3)
+INFO  [12:51:37.910] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 2/3)
+INFO  [12:51:37.937] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 3/3)
+INFO  [12:51:37.986] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 1/3)
+INFO  [12:51:38.159] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 2/3)
+INFO  [12:51:38.357] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 3/3)</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  7,17 ; coefficient may be infinite. 
+<pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  7,8,17,18 ; coefficient may be infinite. 
+This happened PipeOp cph's $train()</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  7,15,17 ; coefficient may be infinite. 
 This happened PipeOp cph's $train()</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  7,16,17,18 ; coefficient may be infinite. 
 This happened PipeOp cph's $train()</code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  8,18 ; coefficient may be infinite. 
-This happened PipeOp cph's $train()</code></pre>
-</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [18:11:49.165] [mlr3] Finished benchmark</code></pre>
+<pre><code>INFO  [12:51:38.547] [mlr3] Finished benchmark</code></pre>
 </div>
 </div>
 <p>We pick the IBS again and aggregate the results:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>measure <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.brier"</span>, <span class="at">id =</span> <span class="st">"ibs"</span>)</span>
-<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a>bmr<span class="sc">$</span><span class="fu">aggregate</span>(measure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>measure <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.brier"</span>, <span class="at">id =</span> <span class="st">"ibs"</span>)</span>
+<span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb111-3"><a href="#cb111-3" aria-hidden="true" tabindex="-1"></a>bmr<span class="sc">$</span><span class="fu">aggregate</span>(measure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>       nr task_id learner_id resampling_id iters        ibs
     &lt;int&gt;  &lt;char&gt;     &lt;char&gt;        &lt;char&gt; &lt;int&gt;      &lt;num&gt;
- 1:     1    actg        cox            cv     3 0.05978873
- 2:     2    actg     glmnet            cv     3 0.06041163
- 3:     3    actg     ranger            cv     3 0.06088070
- 4:     4    actg      aorsf            cv     3 0.05837878
- 5:     5    actg   coxboost            cv     3 0.05906567
- 6:     6    gbcs        cox            cv     3 0.12084849
- 7:     7    gbcs     glmnet            cv     3 0.13339647
- 8:     8    gbcs     ranger            cv     3 0.12825468
- 9:     9    gbcs      aorsf            cv     3 0.11956394
-10:    10    gbcs   coxboost            cv     3 0.12084801
-11:    11   grace        cox            cv     3 0.09749663
-12:    12   grace     glmnet            cv     3 0.10381720
-13:    13   grace     ranger            cv     3 0.10787449
-14:    14   grace      aorsf            cv     3 0.09184122
-15:    15   grace   coxboost            cv     3 0.09749658
+ 1:     1    actg        cox            cv     3 0.05902790
+ 2:     2    actg     glmnet            cv     3 0.05923469
+ 3:     3    actg     ranger            cv     3 0.05908296
+ 4:     4    actg      aorsf            cv     3 0.05766157
+ 5:     5    actg   coxboost            cv     3 0.05840944
+ 6:     6    gbcs        cox            cv     3 0.12337192
+ 7:     7    gbcs     glmnet            cv     3 0.13618790
+ 8:     8    gbcs     ranger            cv     3 0.13351567
+ 9:     9    gbcs      aorsf            cv     3 0.12284371
+10:    10    gbcs   coxboost            cv     3 0.12331885
+11:    11   grace        cox            cv     3 0.09740836
+12:    12   grace     glmnet            cv     3 0.10442313
+13:    13   grace     ranger            cv     3 0.10441897
+14:    14   grace      aorsf            cv     3 0.09085346
+15:    15   grace   coxboost            cv     3 0.09740773
  [ reached getOption("max.print") -- omitted 11 rows ]
 Hidden columns: resample_result</code></pre>
 </div>
@@ -1511,39 +1684,39 @@ Hidden columns: resample_result</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr3benchmark)</span>
-<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a>bma <span class="ot">=</span> <span class="fu">as_benchmark_aggr</span>(bmr, <span class="at">meas =</span> measure)</span>
-<span id="cb109-3"><a href="#cb109-3" aria-hidden="true" tabindex="-1"></a>bma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr3benchmark)</span>
+<span id="cb113-2"><a href="#cb113-2" aria-hidden="true" tabindex="-1"></a>bma <span class="ot">=</span> <span class="fu">as_benchmark_aggr</span>(bmr, <span class="at">meas =</span> measure)</span>
+<span id="cb113-3"><a href="#cb113-3" aria-hidden="true" tabindex="-1"></a>bma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;BenchmarkAggr&gt; of 25 rows with 5 tasks, 5 learners and 1 measure
     task_id learner_id        ibs
      &lt;fctr&gt;     &lt;fctr&gt;      &lt;num&gt;
- 1:    actg        cox 0.05978873
- 2:    actg     glmnet 0.06041163
- 3:    actg     ranger 0.06088070
- 4:    actg      aorsf 0.05837878
- 5:    actg   coxboost 0.05906567
- 6:    gbcs        cox 0.12084849
- 7:    gbcs     glmnet 0.13339647
- 8:    gbcs     ranger 0.12825468
- 9:    gbcs      aorsf 0.11956394
-10:    gbcs   coxboost 0.12084801
-11:   grace        cox 0.09749663
-12:   grace     glmnet 0.10381720
-13:   grace     ranger 0.10787449
-14:   grace      aorsf 0.09184122
-15:   grace   coxboost 0.09749658
-16:    lung        cox 0.15922764
-17:    lung     glmnet 0.14848136
-18:    lung     ranger 0.17343481
-19:    lung      aorsf 0.15450793
-20:    lung   coxboost 0.15905475
-21:    mgus        cox 0.12491045
-22:    mgus     glmnet 0.13442554
-23:    mgus     ranger 0.14613226
-24:    mgus      aorsf 0.13580314
-25:    mgus   coxboost 0.12491102
+ 1:    actg        cox 0.05902790
+ 2:    actg     glmnet 0.05923469
+ 3:    actg     ranger 0.05908296
+ 4:    actg      aorsf 0.05766157
+ 5:    actg   coxboost 0.05840944
+ 6:    gbcs        cox 0.12337192
+ 7:    gbcs     glmnet 0.13618790
+ 8:    gbcs     ranger 0.13351567
+ 9:    gbcs      aorsf 0.12284371
+10:    gbcs   coxboost 0.12331885
+11:   grace        cox 0.09740836
+12:   grace     glmnet 0.10442313
+13:   grace     ranger 0.10441897
+14:   grace      aorsf 0.09085346
+15:   grace   coxboost 0.09740773
+16:    lung        cox 0.16671983
+17:    lung     glmnet 0.15716199
+18:    lung     ranger 0.18335500
+19:    lung      aorsf 0.16104073
+20:    lung   coxboost 0.16608469
+21:    mgus        cox 0.12512740
+22:    mgus     glmnet 0.12656255
+23:    mgus     ranger 0.14286162
+24:    mgus      aorsf 0.12998025
+25:    mgus   coxboost 0.12511761
     task_id learner_id        ibs</code></pre>
 </div>
 </div>
@@ -1551,7 +1724,7 @@ Hidden columns: resample_result</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bma, <span class="at">type =</span> <span class="st">"box"</span>, <span class="at">meas =</span> <span class="st">"ibs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bma, <span class="at">type =</span> <span class="st">"box"</span>, <span class="at">meas =</span> <span class="st">"ibs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1565,21 +1738,21 @@ Hidden columns: resample_result</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>bma<span class="sc">$</span><span class="fu">friedman_test</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>bma<span class="sc">$</span><span class="fu">friedman_test</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
     Friedman rank sum test
 
 data:  ibs and learner_id and task_id
-Friedman chi-squared = 11.04, df = 4, p-value = 0.02612</code></pre>
+Friedman chi-squared = 10.08, df = 4, p-value = 0.0391</code></pre>
 </div>
 </div>
 <p>The corresponding post-hoc test for all pairwise comparison can be performed as follows:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a>bma<span class="sc">$</span><span class="fu">friedman_posthoc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>bma<span class="sc">$</span><span class="fu">friedman_posthoc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
@@ -1589,27 +1762,32 @@ Friedman chi-squared = 11.04, df = 4, p-value = 0.02612</code></pre>
 <pre><code>data: ibs and learner_id and task_id</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         cox   glmnet ranger aorsf
-glmnet   0.975 -      -      -    
-ranger   0.266 0.628  -      -    
-aorsf    0.855 0.497  0.023  -    
-coxboost 0.975 0.751  0.070  0.995</code></pre>
+<pre><code>         cox  glmnet ranger aorsf
+glmnet   0.93 -      -      -    
+ranger   0.63 0.98   -      -    
+aorsf    0.75 0.27   0.07   -    
+coxboost 0.86 0.37   0.12   1.00 </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 P value adjustment method: single-step</code></pre>
 </div>
 </div>
-<p>Which is also available graphically:</p>
+<p>A visual approach is the critical difference plot, which shows a connecting line between the learners that <em>are not</em> statistically different from each other (as far as their average ranks are concerned).</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bma, <span class="at">type =</span> <span class="st">"fn"</span>, <span class="at">meas =</span> <span class="st">"ibs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb123"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bma, <span class="at">type =</span> <span class="st">"cd"</span>, <span class="at">meas =</span> <span class="st">"ibs"</span>, <span class="at">ratio =</span> .<span class="dv">7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in geom_segment(aes(x = 0, xend = max(rank) + 1, y = 0, yend = 0)): All aesthetics have length 1, but the data has 5 rows.
+ℹ Please consider using `annotate()` or provide this layer with data containing
+  a single row.</code></pre>
+</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/bma-friedman-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/bma-cd-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1625,7 +1803,7 @@ P value adjustment method: single-step</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb120"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a>sessioninfo<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>sessioninfo<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>─ Session info ───────────────────────────────────────────────────────────────
@@ -1638,7 +1816,7 @@ P value adjustment method: single-step</code></pre>
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       Europe/Berlin
- date     2024-07-06
+ date     2024-07-07
  pandoc   3.2.1 @ /opt/homebrew/bin/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────
@@ -1781,7 +1959,6 @@ P value adjustment method: single-step</code></pre>
  utf8                1.2.4      2023-10-22 [1] CRAN (R 4.4.0)
  uuid                1.2-0      2024-01-14 [1] CRAN (R 4.4.0)
  vctrs               0.6.5      2023-12-01 [1] CRAN (R 4.4.0)
- viridisLite         0.4.2      2023-05-02 [1] CRAN (R 4.4.0)
  withr               3.0.0      2024-01-16 [1] CRAN (R 4.4.0)
  xfun                0.45       2024-06-16 [1] CRAN (R 4.4.0)
  xtable              1.8-4      2019-04-21 [1] CRAN (R 4.4.0)
