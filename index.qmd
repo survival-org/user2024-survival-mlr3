@@ -3,6 +3,7 @@ title: "Intro to Machine Learning for Survival Analysis with mlr3"
 author: "[John Zobolas](https://github.com/bblodfon), [Lukas Burk](https://lukasburk.de/)"
 date: last-modified
 description: "Tutorial for the useR! 2024 conference in Salzburg, Austria (8-11 July)"
+bibliography: references.bib
 format:
   html:
     date: last-modified
@@ -26,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
 ## `mlr3`: Basics {-}
 
 :::{.callout-tip title="Teaching Aims"}
-- Understand how `{mlr3}` is structured
+- Understand how `{mlr3}` is structured [@mlr3]
 - Access `learner`s and (built-in) `task`s
 :::
 
@@ -87,11 +88,13 @@ preds = learner$predict(task, row_ids = part$test)
 preds$score(msr("classif.ce"))
 ```
 
+Learn more by reading the [respective chapter](https://mlr3book.mlr-org.com/data_and_basic_modeling.html) on the `mlr3` book.
+
 ## `mlr3proba`: Basics {-}
 
 :::{.callout-tip title="Teaching Aims"}
 - Understand survival tasks and how they differ from regression/classification
-- Know how to conduct basic modeling with `{mlr3proba}`
+- Know how to conduct basic modeling with `{mlr3proba}` [@mlr3proba]
 - Prediction types
 - Survival measures
 :::
@@ -129,7 +132,7 @@ Proportion of censored observations:
 task$cens_prop()
 ```
 
-Does the data satisfy the **proportional hazards** assumption? Get the p-value from the Grambsch-Therneau test (see `?survival::cox.zph`):
+Does the data satisfy the **proportional hazards** assumption? Get the p-value from the Grambsch-Therneau test (see `?survival::cox.zph` [@Grambsch1994]):
 
 ```{r}
 task$prop_haz() # barely, p > 0.05 => PH
@@ -205,7 +208,7 @@ Survival prediction is a 2D `matrix` essentially, with dimensions: *observations
 p$data$distr[1:5, 1:5]
 ```
 
-Users should use the [distr6](https://github.com/xoopR/distr6) interface to access this prediction type, which allows us to retrieve survival probabilities (or hazards) for any time point of interest:
+Users should use the [distr6](https://github.com/xoopR/distr6) interface [@distr6] to access this prediction type, which allows us to retrieve survival probabilities (or hazards) for any time point of interest:
 
 ```{r}
 # first 4 patients in the test set, specific time points:
@@ -234,7 +237,7 @@ Many measures included in `mlr3proba`:
 mlr_measures$keys(pattern = "surv")
 ```
 
-Most commonly used metrics are for assessing discrimination, such as **Harrell's C-index**, **Uno's C-index** and the **(time-dependent) AUC**:
+Most commonly used metrics are for assessing discrimination, such as **Harrell's C-index** [@Harrell1982], **Uno's C-index** [@Uno2011] and the **(time-dependent) AUC** [@Heagerty2005; @Uno2007]:
 
 ```{r}
 harrell_c = msr("surv.cindex", id = "surv.cindex.harrell")
@@ -261,7 +264,7 @@ Calibration is traditionally performed graphically via calibration plots:
 autoplot(p, type = "calib", task = task, row_ids = part$test)
 ```
 
-But there exists also calibration metrics, e.g. **D-Calibration**:
+But there exists also calibration metrics, e.g. **D-Calibration** [@Haider2020]:
 ```{r}
 dcal = msr("surv.dcalib")
 dcal
@@ -269,7 +272,7 @@ dcal
 p$score(dcal)
 ```
 
-Overall survival prediction performance can be assessed by scoring rules such as the **Integrated Survival Brier Score** (ISBS) and the **Right-censored Log-Loss** (RCLL) among others:
+Overall survival prediction performance can be assessed by scoring rules such as the **Integrated Survival Brier Score** (ISBS) [@Graf1999] and the **Right-censored Log-Loss** (RCLL) [@Avati2020] among others:
 ```{r}
 rcll = msr("surv.rcll")
 rcll
@@ -292,27 +295,27 @@ p$score(ibrier, task = task, train_set = part$train)
 - Tune hyperparameters with `auto_tuner()`
 :::
 
-So far we have used the Cox regression model, but there are many more machine learning methods available via `mlr3extralearners`!
+So far we have used the Cox regression model, but there are many more machine learning methods available via `mlr3extralearners` ([learner list](https://mlr-org.com/learners.html))!
 We will take a look at the following:
 
-- Cox elastic net via [`glmnet`](https://glmnet.stanford.edu/articles/Coxnet.html)
+- Cox elastic net via [`glmnet`](https://glmnet.stanford.edu/articles/Coxnet.html) [@Friedman2010]
   - We will use `lrn("surv.cv_glmnet")`, wich internally tunes for `lambda` using cross-validation
-- Likelihood-based boosting via [`CoxBoost`](https://github.com/binderh/CoxBoost) 
+- Likelihood-based boosting via [`CoxBoost`](https://github.com/binderh/CoxBoost) [@Binder2008]
   - We later use `lrn("surv.cv_coxboost", penalty = "optimCoxBoostPenalty")`, which also uses internal cross-validation to tune its parameters
-- Random Forests via [`ranger`](https://imbs-hl.github.io/ranger/)
-- Oblique Random Forests via [`aorsf`](https://docs.ropensci.org/aorsf/)
+- Random Forests via [`ranger`](https://imbs-hl.github.io/ranger/) [@Ishwaran2008]
+- Oblique Random Forests via [`aorsf`](https://docs.ropensci.org/aorsf/) [@Jaeger2023]
 
 These learners then cover the range from penalized regression to tree ensembles and boosting.
 
 Let's take these learners for a spin on a subset of TCGA breast cancer data with gene expression and clinical features.
 We first need to create a `TaskSurv` object from the data, which we can do by reading in the data and then using `as_task_surv()`.
-We also add the `status` column to the stratum, which is necessary for the resampling to ensure a similar proportion of events in the resampling folds than the complete dataset.
+We also add the `status` column to the stratum, which is necessary for the resampling to ensure a similar proportion of events in the resampling folds with the complete dataset.
 
 
 ```{r}
 tcga = readRDS("data/tcga.rds")
 
-task_tcga <- mlr3proba::as_task_surv(
+task_tcga = mlr3proba::as_task_surv(
   x = tcga, 
   time = "time", event = "status", id = "BRCA-TCGA"
 )
@@ -335,7 +338,7 @@ lrn_aorsf = lrn("surv.aorsf", n_tree = 100)
 ```
 
 We can now use `resample()` to evaluate the performance of each of these learners on the task.
-To to this, we decide on two measures: Harrell's C and the integrated brier score, and we also instantiate a resampling to use for comparison, such that we ensure all learners see the same data.
+To do this, we decide on two measures: Harrell's C and the integrated brier score, and we also instantiate a resampling to use for comparison, such that we ensure all learners see the same data.
 
 ```{r}
 measures = list(msr("surv.cindex", id = "cindex"), msr("surv.brier", id = "ibs"))
