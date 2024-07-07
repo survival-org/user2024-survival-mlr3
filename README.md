@@ -65,7 +65,7 @@ Install all packages with `{pak}` (`install.packages("pak")`):
 pak::pak(c("tidyverse", "mlr3verse", "survival", "rpart", "glmnet", "ranger", "aorsf", "survminer", upgrade = TRUE)
 
 # Non-CRAN packages from GitHub
-pak::pak(c("mlr-org/mlr3proba", "mlr-org/mlr3extralearners"), upgrade = TRUE)
+pak::pak(c("mlr-org/mlr3proba", "mlr-org/mlr3extralearners", "mlr-org/mlr3viz"), upgrade = TRUE)
 pak::pak("binderh/CoxBoost")
 ```
 
