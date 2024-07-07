@@ -303,11 +303,10 @@ We can access the list of available learners using the <code>mlr_learners</code>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(mlr_learners<span class="sc">$</span><span class="fu">keys</span>(), <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] "clust.ff"                        "classif.naive_bayes_multinomial"
- [3] "clust.xmeans"                    "classif.AdaBoostM1"             
- [5] "dens.mixed"                      "regr.m5p"                       
- [7] "surv.bart"                       "dens.pen"                       
- [9] "regr.IBk"                        "clust.dbscan_fpc"               </code></pre>
+<pre><code> [1] "classif.decision_table" "classif.abess"          "surv.bart"             
+ [4] "clust.diana"            "classif.ctree"          "classif.catboost"      
+ [7] "classif.random_tree"    "dens.nonpar"            "classif.earth"         
+[10] "surv.mboost"           </code></pre>
 </div>
 </div>
 <p>One example:</p>
@@ -421,7 +420,7 @@ Teaching Aims
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>classif.ce 
-         0 </code></pre>
+0.01492537 </code></pre>
 </div>
 </div>
 <p>Learn more by reading the <a href="https://mlr3book.mlr-org.com/data_and_basic_modeling.html">respective chapter</a> on the <code>mlr3</code> book.</p>
@@ -1025,7 +1024,7 @@ Note
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>lrn_glmnet <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>)</span>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>lrn_glmnet <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">s =</span> <span class="st">"lambda.min"</span>)</span>
 <span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>lrn_coxboost <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.coxboost"</span>, <span class="at">penalty =</span> <span class="dv">100</span>)</span>
 <span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>lrn_ranger <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.ranger"</span>, <span class="at">num.trees =</span> <span class="dv">100</span>, <span class="at">num.threads =</span> <span class="dv">4</span>)</span>
 <span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>lrn_aorsf <span class="ot">=</span> <span class="fu">lrn</span>(<span class="st">"surv.aorsf"</span>, <span class="at">n_tree =</span> <span class="dv">100</span>, <span class="at">n_thread =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1047,24 +1046,23 @@ Note
 <span id="cb64-10"><a href="#cb64-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [00:03:06.822] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:08.091] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:09.222] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [00:10:58.085] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:10:59.532] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:00.649] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>rr_glmnet<span class="sc">$</span><span class="fu">score</span>(measures)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>     task_id     learner_id resampling_id iteration   cindex       ibs
-      &lt;char&gt;         &lt;char&gt;        &lt;char&gt;     &lt;int&gt;    &lt;num&gt;     &lt;num&gt;
-1: BRCA-TCGA surv.cv_glmnet            cv         1 0.510439 0.1304813
-2: BRCA-TCGA surv.cv_glmnet            cv         2 0.500000 0.2799500
-3: BRCA-TCGA surv.cv_glmnet            cv         3 0.500000 0.2004451
+<pre><code>     task_id     learner_id resampling_id iteration    cindex       ibs
+      &lt;char&gt;         &lt;char&gt;        &lt;char&gt;     &lt;int&gt;     &lt;num&gt;     &lt;num&gt;
+1: BRCA-TCGA surv.cv_glmnet            cv         1 0.5336199 0.1428582
+2: BRCA-TCGA surv.cv_glmnet            cv         2 0.7011343 0.2703538
+3: BRCA-TCGA surv.cv_glmnet            cv         3 0.7201999 0.1859438
 Hidden columns: task, learner, resampling, prediction</code></pre>
 </div>
 </div>
-<p>Well, looks like <code>glmnet</code> out of the box does not do well on this dataset, judging by the C-index of 0.5. This is what the null model achieves, after all!</p>
 <p>Feel free to play with the parameters of <code>glmnet</code> a bit more — for example, does changing <code>alpha</code> help?</p>
 <p>We can repeat the same procedure for the other learners:</p>
 <div class="cell">
@@ -1077,9 +1075,9 @@ Hidden columns: task, learner, resampling, prediction</code></pre>
 <span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [00:03:10.687] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:11.507] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:12.243] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [00:11:02.267] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:02.915] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:03.630] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1090,9 +1088,9 @@ INFO  [00:03:12.243] [mlr3] Applying learner 'surv.coxboost' on task 'BRCA-TCGA'
 <span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [00:03:12.833] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:13.675] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:14.443] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [00:11:04.357] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:05.167] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:05.962] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1103,9 +1101,9 @@ INFO  [00:03:14.443] [mlr3] Applying learner 'surv.ranger' on task 'BRCA-TCGA' (
 <span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [00:03:15.337] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:15.453] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:15.513] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
+<pre><code>INFO  [00:11:06.876] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:07.004] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:07.062] [mlr3] Applying learner 'surv.aorsf' on task 'BRCA-TCGA' (iter 3/3)</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1152,7 +1150,7 @@ Hidden columns: task, learner, resampling, prediction</code></pre>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   cindex       ibs 
-0.5034797 0.2036254 </code></pre>
+0.6516513 0.1997186 </code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1191,7 +1189,7 @@ Hidden columns: task, learner, resampling, prediction</code></pre>
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>at_glmnet <span class="ot">=</span> <span class="fu">auto_tuner</span>(</span>
-<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fu">to_tune</span>(<span class="dv">0</span>, <span class="dv">1</span>)),</span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fu">to_tune</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">s =</span> <span class="st">"lambda.min"</span>),</span>
 <span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">tuner =</span> <span class="fu">tnr</span>(<span class="st">"grid_search"</span>),</span>
 <span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> <span class="fu">rsmp</span>(<span class="st">"cv"</span>, <span class="at">folds =</span> <span class="dv">3</span>),</span>
 <span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">measure =</span> <span class="fu">msr</span>(<span class="st">"surv.cindex"</span>),</span>
@@ -1206,122 +1204,122 @@ Hidden columns: task, learner, resampling, prediction</code></pre>
 <div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>at_glmnet<span class="sc">$</span><span class="fu">train</span>(task_tcga)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [00:03:17.395] [bbotk] Starting to optimize 1 parameter(s) with '&lt;OptimizerBatchGridSearch&gt;' and '&lt;TerminatorEvals&gt; [n_evals=100, k=0]'
-INFO  [00:03:17.401] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:17.407] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:17.410] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:18.712] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:19.843] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:20.974] [mlr3] Finished benchmark
-INFO  [00:03:20.992] [bbotk] Result of batch 1:
-INFO  [00:03:20.993] [bbotk]      alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:20.993] [bbotk]  0.5555556   0.5520563        0      0            3.546
-INFO  [00:03:20.993] [bbotk]                                 uhash
-INFO  [00:03:20.993] [bbotk]  6dd7e1bf-55b4-4caf-8ba9-bbcebe87a367
-INFO  [00:03:20.995] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:20.999] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:21.002] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:22.286] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:23.439] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:24.563] [mlr3] Finished benchmark
-INFO  [00:03:24.580] [bbotk] Result of batch 2:
-INFO  [00:03:24.582] [bbotk]      alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:24.582] [bbotk]  0.8888889   0.5520563        0      0            3.541
-INFO  [00:03:24.582] [bbotk]                                 uhash
-INFO  [00:03:24.582] [bbotk]  e5917b4c-41d1-44ee-970b-59b582a8d3b5
-INFO  [00:03:24.583] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:24.587] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:24.591] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:25.878] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:27.036] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:28.179] [mlr3] Finished benchmark
-INFO  [00:03:28.195] [bbotk] Result of batch 3:
-INFO  [00:03:28.197] [bbotk]      alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:28.197] [bbotk]  0.7777778         0.5        0      0             3.57
-INFO  [00:03:28.197] [bbotk]                                 uhash
-INFO  [00:03:28.197] [bbotk]  bb7465d3-ecba-49b0-b4d0-2a6a483c1f2f
-INFO  [00:03:28.198] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:28.202] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:28.206] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:29.493] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:30.610] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:31.677] [mlr3] Finished benchmark
-INFO  [00:03:31.699] [bbotk] Result of batch 4:
-INFO  [00:03:31.700] [bbotk]      alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:31.700] [bbotk]  0.6666667   0.5496212        0      0            3.455
-INFO  [00:03:31.700] [bbotk]                                 uhash
-INFO  [00:03:31.700] [bbotk]  93fb9d5c-220c-461b-a0e7-7e545f765e02
-INFO  [00:03:31.702] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:31.706] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:31.709] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:33.279] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:34.538] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:35.789] [mlr3] Finished benchmark
-INFO  [00:03:35.806] [bbotk] Result of batch 5:
-INFO  [00:03:35.808] [bbotk]      alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:35.808] [bbotk]  0.1111111         0.5        0      0            4.062
-INFO  [00:03:35.808] [bbotk]                                 uhash
-INFO  [00:03:35.808] [bbotk]  b1d442da-2fcf-4205-ad1b-968471869ee2
-INFO  [00:03:35.809] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:35.813] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:35.816] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:37.067] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:38.212] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:39.258] [mlr3] Finished benchmark
-INFO  [00:03:39.277] [bbotk] Result of batch 6:
-INFO  [00:03:39.278] [bbotk]  alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:39.278] [bbotk]      1         0.5        0      0            3.424
-INFO  [00:03:39.278] [bbotk]                                 uhash
-INFO  [00:03:39.278] [bbotk]  e31a0329-f3d3-4680-9982-a2efa95ddace
-INFO  [00:03:39.280] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:39.284] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:39.288] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:40.443] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:41.529] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:42.440] [mlr3] Finished benchmark
-INFO  [00:03:42.457] [bbotk] Result of batch 7:
-INFO  [00:03:42.459] [bbotk]  alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:42.459] [bbotk]      0   0.5921736        0      0            3.135
-INFO  [00:03:42.459] [bbotk]                                 uhash
-INFO  [00:03:42.459] [bbotk]  ecc38783-f1c9-4af3-b78f-1779ebdb6510
-INFO  [00:03:42.460] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:42.464] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:42.468] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:43.836] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:44.987] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:46.180] [mlr3] Finished benchmark
-INFO  [00:03:46.198] [bbotk] Result of batch 8:
-INFO  [00:03:46.199] [bbotk]      alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:46.199] [bbotk]  0.3333333         0.5        0      0            3.696
-INFO  [00:03:46.199] [bbotk]                                 uhash
-INFO  [00:03:46.199] [bbotk]  6523bc3e-f6bb-43a7-b8f4-72f75d2c3e6b
-INFO  [00:03:46.200] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:46.204] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:46.208] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:47.506] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:48.702] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:49.862] [mlr3] Finished benchmark
-INFO  [00:03:49.884] [bbotk] Result of batch 9:
-INFO  [00:03:49.885] [bbotk]      alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:49.885] [bbotk]  0.4444444        0.55        0      0            3.637
-INFO  [00:03:49.885] [bbotk]                                 uhash
-INFO  [00:03:49.885] [bbotk]  9c27efe4-6130-4330-b0c5-275036c6063a
-INFO  [00:03:49.886] [bbotk] Evaluating 1 configuration(s)
-INFO  [00:03:49.890] [mlr3] Running benchmark with 3 resampling iterations
-INFO  [00:03:49.894] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
-INFO  [00:03:51.230] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
-INFO  [00:03:52.459] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
-INFO  [00:03:53.641] [mlr3] Finished benchmark
-INFO  [00:03:53.658] [bbotk] Result of batch 10:
-INFO  [00:03:53.660] [bbotk]      alpha surv.cindex warnings errors runtime_learners
-INFO  [00:03:53.660] [bbotk]  0.2222222   0.5520563        0      0            3.731
-INFO  [00:03:53.660] [bbotk]                                 uhash
-INFO  [00:03:53.660] [bbotk]  82686840-7d91-43e9-a86c-971cfa2bd0bc
-INFO  [00:03:53.667] [bbotk] Finished optimizing after 10 evaluation(s)
-INFO  [00:03:53.667] [bbotk] Result:
-INFO  [00:03:53.668] [bbotk]  alpha learner_param_vals  x_domain surv.cindex
-INFO  [00:03:53.668] [bbotk]  &lt;num&gt;             &lt;list&gt;    &lt;list&gt;       &lt;num&gt;
-INFO  [00:03:53.668] [bbotk]      0          &lt;list[1]&gt; &lt;list[1]&gt;   0.5921736</code></pre>
+<pre><code>INFO  [00:11:08.717] [bbotk] Starting to optimize 1 parameter(s) with '&lt;OptimizerBatchGridSearch&gt;' and '&lt;TerminatorEvals&gt; [n_evals=100, k=0]'
+INFO  [00:11:08.723] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:08.728] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:08.732] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:09.912] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:11.305] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:12.364] [mlr3] Finished benchmark
+INFO  [00:11:12.382] [bbotk] Result of batch 1:
+INFO  [00:11:12.384] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:12.384] [bbotk]  0.7777778   0.6262311        0      0            3.615
+INFO  [00:11:12.384] [bbotk]                                 uhash
+INFO  [00:11:12.384] [bbotk]  1c78a0de-e406-4308-9e01-35cad209a33b
+INFO  [00:11:12.385] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:12.389] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:12.393] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:13.606] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:14.951] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:16.000] [mlr3] Finished benchmark
+INFO  [00:11:16.018] [bbotk] Result of batch 2:
+INFO  [00:11:16.019] [bbotk]  alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:16.019] [bbotk]      1   0.6304686        0      0            3.592
+INFO  [00:11:16.019] [bbotk]                                 uhash
+INFO  [00:11:16.019] [bbotk]  bdbf7001-6698-41d2-a284-0453799cf4ac
+INFO  [00:11:16.021] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:16.025] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:16.028] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:17.252] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:18.674] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:19.756] [mlr3] Finished benchmark
+INFO  [00:11:19.779] [bbotk] Result of batch 3:
+INFO  [00:11:19.780] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:19.780] [bbotk]  0.6666667   0.6285418        0      0             3.71
+INFO  [00:11:19.780] [bbotk]                                 uhash
+INFO  [00:11:19.780] [bbotk]  c07db742-bdf4-4ad9-a054-4d2dfe21580c
+INFO  [00:11:19.782] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:19.786] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:19.790] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:20.994] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:22.453] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:23.576] [mlr3] Finished benchmark
+INFO  [00:11:23.597] [bbotk] Result of batch 4:
+INFO  [00:11:23.599] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:23.599] [bbotk]  0.3333333   0.6312686        0      0            3.768
+INFO  [00:11:23.599] [bbotk]                                 uhash
+INFO  [00:11:23.599] [bbotk]  7431e37c-d7b9-4020-b775-1e08d3bb2a18
+INFO  [00:11:23.600] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:23.605] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:23.608] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:24.886] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:26.569] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:27.712] [mlr3] Finished benchmark
+INFO  [00:11:27.730] [bbotk] Result of batch 5:
+INFO  [00:11:27.731] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:27.731] [bbotk]  0.2222222   0.6265975        0      0            4.085
+INFO  [00:11:27.731] [bbotk]                                 uhash
+INFO  [00:11:27.731] [bbotk]  dc2c95dd-fb53-4db5-8de4-f00e0815fa2a
+INFO  [00:11:27.732] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:27.737] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:27.740] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:28.882] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:30.256] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:31.345] [mlr3] Finished benchmark
+INFO  [00:11:31.367] [bbotk] Result of batch 6:
+INFO  [00:11:31.369] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:31.369] [bbotk]  0.5555556   0.6288861        0      0            3.589
+INFO  [00:11:31.369] [bbotk]                                 uhash
+INFO  [00:11:31.369] [bbotk]  f9c6d586-59e1-49de-a947-85a617bc2adb
+INFO  [00:11:31.370] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:31.374] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:31.378] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:32.556] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:33.945] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:35.022] [mlr3] Finished benchmark
+INFO  [00:11:35.041] [bbotk] Result of batch 7:
+INFO  [00:11:35.043] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:35.043] [bbotk]  0.8888889   0.6289243        0      0            3.627
+INFO  [00:11:35.043] [bbotk]                                 uhash
+INFO  [00:11:35.043] [bbotk]  a155997f-ba60-4d13-90be-ecc98fdd7d3d
+INFO  [00:11:35.045] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:35.050] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:35.053] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:36.476] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:38.053] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:39.322] [mlr3] Finished benchmark
+INFO  [00:11:39.339] [bbotk] Result of batch 8:
+INFO  [00:11:39.340] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:39.340] [bbotk]  0.1111111   0.6408908        0      0            4.251
+INFO  [00:11:39.340] [bbotk]                                 uhash
+INFO  [00:11:39.340] [bbotk]  9e72b12b-844f-4889-9995-954a91b3a3e1
+INFO  [00:11:39.342] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:39.346] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:39.349] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:40.650] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:42.075] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:43.184] [mlr3] Finished benchmark
+INFO  [00:11:43.207] [bbotk] Result of batch 9:
+INFO  [00:11:43.208] [bbotk]      alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:43.208] [bbotk]  0.4444444   0.6291064        0      0            3.816
+INFO  [00:11:43.208] [bbotk]                                 uhash
+INFO  [00:11:43.208] [bbotk]  32da2be8-683b-4d1d-a5fa-ed585b0ea220
+INFO  [00:11:43.209] [bbotk] Evaluating 1 configuration(s)
+INFO  [00:11:43.213] [mlr3] Running benchmark with 3 resampling iterations
+INFO  [00:11:43.217] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 1/3)
+INFO  [00:11:44.173] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 2/3)
+INFO  [00:11:45.161] [mlr3] Applying learner 'surv.cv_glmnet' on task 'BRCA-TCGA' (iter 3/3)
+INFO  [00:11:46.138] [mlr3] Finished benchmark
+INFO  [00:11:46.155] [bbotk] Result of batch 10:
+INFO  [00:11:46.157] [bbotk]  alpha surv.cindex warnings errors runtime_learners
+INFO  [00:11:46.157] [bbotk]      0   0.6445429        0      0            2.904
+INFO  [00:11:46.157] [bbotk]                                 uhash
+INFO  [00:11:46.157] [bbotk]  a10b55d0-ca39-443e-9970-71737f6e5041
+INFO  [00:11:46.164] [bbotk] Finished optimizing after 10 evaluation(s)
+INFO  [00:11:46.164] [bbotk] Result:
+INFO  [00:11:46.165] [bbotk]  alpha learner_param_vals  x_domain surv.cindex
+INFO  [00:11:46.165] [bbotk]  &lt;num&gt;             &lt;list&gt;    &lt;list&gt;       &lt;num&gt;
+INFO  [00:11:46.165] [bbotk]      0          &lt;list[2]&gt; &lt;list[1]&gt;   0.6445429</code></pre>
 </div>
 </div>
 <p>We can see all evaluated parameter combinations in the <code>$tuning_instance</code> and the best result in <code>$tuning_result</code></p>
@@ -1342,20 +1340,20 @@ INFO  [00:03:53.668] [bbotk]      0          &lt;list[1]&gt; &lt;list[1]&gt;   0
 * Result:
    alpha surv.cindex
    &lt;num&gt;       &lt;num&gt;
-1:     0   0.5921736
+1:     0   0.6445429
 * Archive:
         alpha surv.cindex
         &lt;num&gt;       &lt;num&gt;
- 1: 0.5555556   0.5520563
- 2: 0.8888889   0.5520563
- 3: 0.7777778   0.5000000
- 4: 0.6666667   0.5496212
- 5: 0.1111111   0.5000000
- 6: 1.0000000   0.5000000
- 7: 0.0000000   0.5921736
- 8: 0.3333333   0.5000000
- 9: 0.4444444   0.5500000
-10: 0.2222222   0.5520563</code></pre>
+ 1: 0.7777778   0.6262311
+ 2: 1.0000000   0.6304686
+ 3: 0.6666667   0.6285418
+ 4: 0.3333333   0.6312686
+ 5: 0.2222222   0.6265975
+ 6: 0.5555556   0.6288861
+ 7: 0.8888889   0.6289243
+ 8: 0.1111111   0.6408908
+ 9: 0.4444444   0.6291064
+10: 0.0000000   0.6445429</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1364,7 +1362,7 @@ INFO  [00:03:53.668] [bbotk]      0          &lt;list[1]&gt; &lt;list[1]&gt;   0
 <div class="cell-output cell-output-stdout">
 <pre><code>   alpha learner_param_vals  x_domain surv.cindex
    &lt;num&gt;             &lt;list&gt;    &lt;list&gt;       &lt;num&gt;
-1:     0          &lt;list[1]&gt; &lt;list[1]&gt;   0.5921736</code></pre>
+1:     0          &lt;list[2]&gt; &lt;list[1]&gt;   0.6445429</code></pre>
 </div>
 </div>
 <p>We get a better result than 0.5 now, but note <em>we used all of the data</em> now, so while this would be the approach we could use to find a model for new data, right now we want to compare our learners fairly! That means: <em>Nested resampling</em>, where we use resampling for tuning, and for evaluation in two layers.</p>
@@ -1374,7 +1372,7 @@ INFO  [00:03:53.668] [bbotk]      0          &lt;list[1]&gt; &lt;list[1]&gt;   0
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a>at_glmnet <span class="ot">=</span> <span class="fu">auto_tuner</span>(</span>
-<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fu">to_tune</span>(<span class="dv">0</span>, <span class="dv">1</span>)),</span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">learner =</span> <span class="fu">lrn</span>(<span class="st">"surv.cv_glmnet"</span>, <span class="at">alpha =</span> <span class="fu">to_tune</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">s =</span> <span class="st">"lambda.min"</span>),</span>
 <span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">tuner =</span> <span class="fu">tnr</span>(<span class="st">"grid_search"</span>),</span>
 <span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">resampling =</span> <span class="fu">rsmp</span>(<span class="st">"cv"</span>, <span class="at">folds =</span> <span class="dv">3</span>),</span>
 <span id="cb95-5"><a href="#cb95-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">measure =</span> <span class="fu">msr</span>(<span class="st">"surv.cindex"</span>),</span>
@@ -1590,125 +1588,121 @@ $coxboost
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [00:03:55.372] [mlr3] Running benchmark with 75 resampling iterations
-INFO  [00:03:55.375] [mlr3] Applying learner 'cox' on task 'actg' (iter 1/3)
-INFO  [00:03:55.461] [mlr3] Applying learner 'cox' on task 'actg' (iter 2/3)
-INFO  [00:03:55.717] [mlr3] Applying learner 'cox' on task 'actg' (iter 3/3)
-INFO  [00:03:55.786] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 1/3)
-INFO  [00:03:56.235] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 2/3)
-INFO  [00:03:56.632] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 3/3)
-INFO  [00:03:57.069] [mlr3] Applying learner 'ranger' on task 'actg' (iter 1/3)
-INFO  [00:03:57.152] [mlr3] Applying learner 'ranger' on task 'actg' (iter 2/3)
-INFO  [00:03:57.229] [mlr3] Applying learner 'ranger' on task 'actg' (iter 3/3)
-INFO  [00:03:57.306] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 1/3)
-INFO  [00:03:57.345] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 2/3)
-INFO  [00:03:57.381] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 3/3)
-INFO  [00:03:57.417] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 1/3)
-INFO  [00:03:57.764] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 2/3)
-INFO  [00:03:58.100] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 3/3)
-INFO  [00:03:58.624] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 1/3)
-INFO  [00:03:58.669] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 2/3)
-INFO  [00:03:58.712] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 3/3)
-INFO  [00:03:58.756] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 1/3)
-INFO  [00:03:58.899] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 2/3)
-INFO  [00:03:59.019] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 3/3)
-INFO  [00:03:59.161] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 1/3)
-INFO  [00:03:59.237] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 2/3)
-INFO  [00:03:59.310] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 3/3)
-INFO  [00:03:59.382] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 1/3)
-INFO  [00:03:59.413] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 2/3)
-INFO  [00:03:59.444] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 3/3)
-INFO  [00:03:59.476] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 1/3)
-INFO  [00:03:59.941] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 2/3)
-INFO  [00:04:00.201] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 3/3)
-INFO  [00:04:00.460] [mlr3] Applying learner 'cox' on task 'grace' (iter 1/3)
-INFO  [00:04:00.503] [mlr3] Applying learner 'cox' on task 'grace' (iter 2/3)
-INFO  [00:04:00.548] [mlr3] Applying learner 'cox' on task 'grace' (iter 3/3)
-INFO  [00:04:00.592] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 1/3)
-INFO  [00:04:00.781] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 2/3)
-INFO  [00:04:00.966] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 3/3)
-INFO  [00:04:01.146] [mlr3] Applying learner 'ranger' on task 'grace' (iter 1/3)
-INFO  [00:04:01.250] [mlr3] Applying learner 'ranger' on task 'grace' (iter 2/3)
-INFO  [00:04:01.341] [mlr3] Applying learner 'ranger' on task 'grace' (iter 3/3)
-INFO  [00:04:01.431] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 1/3)
-INFO  [00:04:01.471] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 2/3)
-INFO  [00:04:01.512] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 3/3)
-INFO  [00:04:01.551] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 1/3)
-INFO  [00:04:02.175] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 2/3)
-INFO  [00:04:02.810] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 3/3)
-INFO  [00:04:03.208] [mlr3] Applying learner 'cox' on task 'lung' (iter 1/3)
-INFO  [00:04:03.267] [mlr3] Applying learner 'cox' on task 'lung' (iter 2/3)
-INFO  [00:04:03.326] [mlr3] Applying learner 'cox' on task 'lung' (iter 3/3)
-INFO  [00:04:03.386] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 1/3)
-INFO  [00:04:03.480] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 2/3)
-INFO  [00:04:03.577] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 3/3)
-INFO  [00:04:03.669] [mlr3] Applying learner 'ranger' on task 'lung' (iter 1/3)
-INFO  [00:04:03.694] [mlr3] Applying learner 'ranger' on task 'lung' (iter 2/3)
-INFO  [00:04:03.718] [mlr3] Applying learner 'ranger' on task 'lung' (iter 3/3)
-INFO  [00:04:03.742] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 1/3)
-INFO  [00:04:03.765] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 2/3)
-INFO  [00:04:03.787] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 3/3)
-INFO  [00:04:03.811] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 1/3)
-INFO  [00:04:03.946] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 2/3)
-INFO  [00:04:04.076] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 3/3)
-INFO  [00:04:04.210] [mlr3] Applying learner 'cox' on task 'mgus' (iter 1/3)
-INFO  [00:04:04.264] [mlr3] Applying learner 'cox' on task 'mgus' (iter 2/3)
-INFO  [00:04:04.318] [mlr3] Applying learner 'cox' on task 'mgus' (iter 3/3)
-INFO  [00:04:04.372] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 1/3)
-INFO  [00:04:04.471] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 2/3)
-INFO  [00:04:04.559] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 3/3)
-INFO  [00:04:04.651] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 1/3)
-INFO  [00:04:04.680] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 2/3)
-INFO  [00:04:04.710] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 3/3)
-INFO  [00:04:04.737] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 1/3)
-INFO  [00:04:04.760] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 2/3)
-INFO  [00:04:04.783] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 3/3)
-INFO  [00:04:04.805] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 1/3)
-INFO  [00:04:04.980] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 2/3)
-INFO  [00:04:05.184] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 3/3)</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  7,8,17,18 ; coefficient may be infinite. 
-This happened PipeOp cph's $train()</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  7,15,17 ; coefficient may be infinite. 
-This happened PipeOp cph's $train()</code></pre>
+<pre><code>INFO  [00:11:47.824] [mlr3] Running benchmark with 75 resampling iterations
+INFO  [00:11:47.828] [mlr3] Applying learner 'cox' on task 'actg' (iter 1/3)
+INFO  [00:11:47.911] [mlr3] Applying learner 'cox' on task 'actg' (iter 2/3)
+INFO  [00:11:47.978] [mlr3] Applying learner 'cox' on task 'actg' (iter 3/3)
+INFO  [00:11:48.239] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 1/3)
+INFO  [00:11:48.615] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 2/3)
+INFO  [00:11:49.029] [mlr3] Applying learner 'glmnet' on task 'actg' (iter 3/3)
+INFO  [00:11:49.468] [mlr3] Applying learner 'ranger' on task 'actg' (iter 1/3)
+INFO  [00:11:49.547] [mlr3] Applying learner 'ranger' on task 'actg' (iter 2/3)
+INFO  [00:11:49.622] [mlr3] Applying learner 'ranger' on task 'actg' (iter 3/3)
+INFO  [00:11:49.699] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 1/3)
+INFO  [00:11:49.747] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 2/3)
+INFO  [00:11:49.784] [mlr3] Applying learner 'aorsf' on task 'actg' (iter 3/3)
+INFO  [00:11:49.821] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 1/3)
+INFO  [00:11:50.164] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 2/3)
+INFO  [00:11:50.678] [mlr3] Applying learner 'coxboost' on task 'actg' (iter 3/3)
+INFO  [00:11:51.003] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 1/3)
+INFO  [00:11:51.047] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 2/3)
+INFO  [00:11:51.093] [mlr3] Applying learner 'cox' on task 'gbcs' (iter 3/3)
+INFO  [00:11:51.143] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 1/3)
+INFO  [00:11:51.269] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 2/3)
+INFO  [00:11:51.394] [mlr3] Applying learner 'glmnet' on task 'gbcs' (iter 3/3)
+INFO  [00:11:51.529] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 1/3)
+INFO  [00:11:51.604] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 2/3)
+INFO  [00:11:51.687] [mlr3] Applying learner 'ranger' on task 'gbcs' (iter 3/3)
+INFO  [00:11:51.756] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 1/3)
+INFO  [00:11:51.787] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 2/3)
+INFO  [00:11:51.818] [mlr3] Applying learner 'aorsf' on task 'gbcs' (iter 3/3)
+INFO  [00:11:51.847] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 1/3)
+INFO  [00:11:52.305] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 2/3)
+INFO  [00:11:52.561] [mlr3] Applying learner 'coxboost' on task 'gbcs' (iter 3/3)
+INFO  [00:11:52.777] [mlr3] Applying learner 'cox' on task 'grace' (iter 1/3)
+INFO  [00:11:52.819] [mlr3] Applying learner 'cox' on task 'grace' (iter 2/3)
+INFO  [00:11:52.869] [mlr3] Applying learner 'cox' on task 'grace' (iter 3/3)
+INFO  [00:11:52.909] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 1/3)
+INFO  [00:11:53.090] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 2/3)
+INFO  [00:11:53.266] [mlr3] Applying learner 'glmnet' on task 'grace' (iter 3/3)
+INFO  [00:11:53.450] [mlr3] Applying learner 'ranger' on task 'grace' (iter 1/3)
+INFO  [00:11:53.540] [mlr3] Applying learner 'ranger' on task 'grace' (iter 2/3)
+INFO  [00:11:53.628] [mlr3] Applying learner 'ranger' on task 'grace' (iter 3/3)
+INFO  [00:11:53.723] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 1/3)
+INFO  [00:11:53.762] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 2/3)
+INFO  [00:11:53.804] [mlr3] Applying learner 'aorsf' on task 'grace' (iter 3/3)
+INFO  [00:11:53.844] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 1/3)
+INFO  [00:11:54.443] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 2/3)
+INFO  [00:11:55.058] [mlr3] Applying learner 'coxboost' on task 'grace' (iter 3/3)
+INFO  [00:11:55.470] [mlr3] Applying learner 'cox' on task 'lung' (iter 1/3)
+INFO  [00:11:55.523] [mlr3] Applying learner 'cox' on task 'lung' (iter 2/3)
+INFO  [00:11:55.575] [mlr3] Applying learner 'cox' on task 'lung' (iter 3/3)
+INFO  [00:11:55.630] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 1/3)
+INFO  [00:11:55.724] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 2/3)
+INFO  [00:11:55.818] [mlr3] Applying learner 'glmnet' on task 'lung' (iter 3/3)
+INFO  [00:11:55.904] [mlr3] Applying learner 'ranger' on task 'lung' (iter 1/3)
+INFO  [00:11:55.929] [mlr3] Applying learner 'ranger' on task 'lung' (iter 2/3)
+INFO  [00:11:55.953] [mlr3] Applying learner 'ranger' on task 'lung' (iter 3/3)
+INFO  [00:11:55.978] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 1/3)
+INFO  [00:11:55.999] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 2/3)
+INFO  [00:11:56.022] [mlr3] Applying learner 'aorsf' on task 'lung' (iter 3/3)
+INFO  [00:11:56.043] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 1/3)
+INFO  [00:11:56.185] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 2/3)
+INFO  [00:11:56.317] [mlr3] Applying learner 'coxboost' on task 'lung' (iter 3/3)
+INFO  [00:11:56.447] [mlr3] Applying learner 'cox' on task 'mgus' (iter 1/3)
+INFO  [00:11:56.500] [mlr3] Applying learner 'cox' on task 'mgus' (iter 2/3)
+INFO  [00:11:56.554] [mlr3] Applying learner 'cox' on task 'mgus' (iter 3/3)
+INFO  [00:11:56.609] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 1/3)
+INFO  [00:11:56.710] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 2/3)
+INFO  [00:11:56.794] [mlr3] Applying learner 'glmnet' on task 'mgus' (iter 3/3)
+INFO  [00:11:56.883] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 1/3)
+INFO  [00:11:56.912] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 2/3)
+INFO  [00:11:56.940] [mlr3] Applying learner 'ranger' on task 'mgus' (iter 3/3)
+INFO  [00:11:56.969] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 1/3)
+INFO  [00:11:57.017] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 2/3)
+INFO  [00:11:57.042] [mlr3] Applying learner 'aorsf' on task 'mgus' (iter 3/3)
+INFO  [00:11:57.066] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 1/3)
+INFO  [00:11:57.237] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 2/3)
+INFO  [00:11:57.417] [mlr3] Applying learner 'coxboost' on task 'mgus' (iter 3/3)</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  7,16,17,18 ; coefficient may be infinite. 
 This happened PipeOp cph's $train()</code></pre>
 </div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in coxph.fit(X, Y, istrat, offset, init, control, weights = weights, : Loglik converged before variable  7,8,17,18 ; coefficient may be infinite. 
+This happened PipeOp cph's $train()</code></pre>
+</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>INFO  [00:04:05.368] [mlr3] Finished benchmark</code></pre>
+<pre><code>INFO  [00:11:57.599] [mlr3] Finished benchmark</code></pre>
 </div>
 </div>
 <p>We pick the IBS again and aggregate the results:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>measure <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.brier"</span>, <span class="at">id =</span> <span class="st">"ibs"</span>)</span>
-<span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb111-3"><a href="#cb111-3" aria-hidden="true" tabindex="-1"></a>bmr<span class="sc">$</span><span class="fu">aggregate</span>(measure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>measure <span class="ot">=</span> <span class="fu">msr</span>(<span class="st">"surv.brier"</span>, <span class="at">id =</span> <span class="st">"ibs"</span>)</span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a>bmr<span class="sc">$</span><span class="fu">aggregate</span>(measure)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>       nr task_id learner_id resampling_id iters        ibs
     &lt;int&gt;  &lt;char&gt;     &lt;char&gt;        &lt;char&gt; &lt;int&gt;      &lt;num&gt;
- 1:     1    actg        cox            cv     3 0.05902790
- 2:     2    actg     glmnet            cv     3 0.05923469
- 3:     3    actg     ranger            cv     3 0.05908296
- 4:     4    actg      aorsf            cv     3 0.05766157
- 5:     5    actg   coxboost            cv     3 0.05840944
- 6:     6    gbcs        cox            cv     3 0.12337192
- 7:     7    gbcs     glmnet            cv     3 0.13618790
- 8:     8    gbcs     ranger            cv     3 0.13351567
- 9:     9    gbcs      aorsf            cv     3 0.12284371
-10:    10    gbcs   coxboost            cv     3 0.12331885
-11:    11   grace        cox            cv     3 0.09740836
-12:    12   grace     glmnet            cv     3 0.10442313
-13:    13   grace     ranger            cv     3 0.10441897
-14:    14   grace      aorsf            cv     3 0.09085346
-15:    15   grace   coxboost            cv     3 0.09740773
+ 1:     1    actg        cox            cv     3 0.05727819
+ 2:     2    actg     glmnet            cv     3 0.05940958
+ 3:     3    actg     ranger            cv     3 0.05774745
+ 4:     4    actg      aorsf            cv     3 0.05704656
+ 5:     5    actg   coxboost            cv     3 0.05682344
+ 6:     6    gbcs        cox            cv     3 0.12943443
+ 7:     7    gbcs     glmnet            cv     3 0.13680298
+ 8:     8    gbcs     ranger            cv     3 0.13765679
+ 9:     9    gbcs      aorsf            cv     3 0.12744115
+10:    10    gbcs   coxboost            cv     3 0.12943960
+11:    11   grace        cox            cv     3 0.09723106
+12:    12   grace     glmnet            cv     3 0.10502925
+13:    13   grace     ranger            cv     3 0.10822685
+14:    14   grace      aorsf            cv     3 0.09167183
+15:    15   grace   coxboost            cv     3 0.09723110
  [ reached getOption("max.print") -- omitted 11 rows ]
 Hidden columns: resample_result</code></pre>
 </div>
@@ -1719,39 +1713,39 @@ Hidden columns: resample_result</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr3benchmark)</span>
-<span id="cb113-2"><a href="#cb113-2" aria-hidden="true" tabindex="-1"></a>bma <span class="ot">=</span> <span class="fu">as_benchmark_aggr</span>(bmr, <span class="at">meas =</span> measure)</span>
-<span id="cb113-3"><a href="#cb113-3" aria-hidden="true" tabindex="-1"></a>bma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlr3benchmark)</span>
+<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a>bma <span class="ot">=</span> <span class="fu">as_benchmark_aggr</span>(bmr, <span class="at">meas =</span> measure)</span>
+<span id="cb112-3"><a href="#cb112-3" aria-hidden="true" tabindex="-1"></a>bma</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;BenchmarkAggr&gt; of 25 rows with 5 tasks, 5 learners and 1 measure
     task_id learner_id        ibs
      &lt;fctr&gt;     &lt;fctr&gt;      &lt;num&gt;
- 1:    actg        cox 0.05902790
- 2:    actg     glmnet 0.05923469
- 3:    actg     ranger 0.05908296
- 4:    actg      aorsf 0.05766157
- 5:    actg   coxboost 0.05840944
- 6:    gbcs        cox 0.12337192
- 7:    gbcs     glmnet 0.13618790
- 8:    gbcs     ranger 0.13351567
- 9:    gbcs      aorsf 0.12284371
-10:    gbcs   coxboost 0.12331885
-11:   grace        cox 0.09740836
-12:   grace     glmnet 0.10442313
-13:   grace     ranger 0.10441897
-14:   grace      aorsf 0.09085346
-15:   grace   coxboost 0.09740773
-16:    lung        cox 0.16671983
-17:    lung     glmnet 0.15716199
-18:    lung     ranger 0.18335500
-19:    lung      aorsf 0.16104073
-20:    lung   coxboost 0.16608469
-21:    mgus        cox 0.12512740
-22:    mgus     glmnet 0.12656255
-23:    mgus     ranger 0.14286162
-24:    mgus      aorsf 0.12998025
-25:    mgus   coxboost 0.12511761
+ 1:    actg        cox 0.05727819
+ 2:    actg     glmnet 0.05940958
+ 3:    actg     ranger 0.05774745
+ 4:    actg      aorsf 0.05704656
+ 5:    actg   coxboost 0.05682344
+ 6:    gbcs        cox 0.12943443
+ 7:    gbcs     glmnet 0.13680298
+ 8:    gbcs     ranger 0.13765679
+ 9:    gbcs      aorsf 0.12744115
+10:    gbcs   coxboost 0.12943960
+11:   grace        cox 0.09723106
+12:   grace     glmnet 0.10502925
+13:   grace     ranger 0.10822685
+14:   grace      aorsf 0.09167183
+15:   grace   coxboost 0.09723110
+16:    lung        cox 0.15333368
+17:    lung     glmnet 0.14658464
+18:    lung     ranger 0.16722756
+19:    lung      aorsf 0.14909360
+20:    lung   coxboost 0.15303153
+21:    mgus        cox 0.11897127
+22:    mgus     glmnet 0.12739140
+23:    mgus     ranger 0.13504452
+24:    mgus      aorsf 0.12021372
+25:    mgus   coxboost 0.11897096
     task_id learner_id        ibs</code></pre>
 </div>
 </div>
@@ -1759,7 +1753,7 @@ Hidden columns: resample_result</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bma, <span class="at">type =</span> <span class="st">"box"</span>, <span class="at">meas =</span> <span class="st">"ibs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bma, <span class="at">type =</span> <span class="st">"box"</span>, <span class="at">meas =</span> <span class="st">"ibs"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -1773,21 +1767,21 @@ Hidden columns: resample_result</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>bma<span class="sc">$</span><span class="fu">friedman_test</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a>bma<span class="sc">$</span><span class="fu">friedman_test</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
     Friedman rank sum test
 
 data:  ibs and learner_id and task_id
-Friedman chi-squared = 10.08, df = 4, p-value = 0.0391</code></pre>
+Friedman chi-squared = 11.68, df = 4, p-value = 0.0199</code></pre>
 </div>
 </div>
 <p>The corresponding post-hoc test for all pairwise comparison can be performed as follows:</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>bma<span class="sc">$</span><span class="fu">friedman_posthoc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb117"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>bma<span class="sc">$</span><span class="fu">friedman_posthoc</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>
@@ -1797,11 +1791,11 @@ Friedman chi-squared = 10.08, df = 4, p-value = 0.0391</code></pre>
 <pre><code>data: ibs and learner_id and task_id</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         cox  glmnet ranger aorsf
-glmnet   0.93 -      -      -    
-ranger   0.63 0.98   -      -    
-aorsf    0.75 0.27   0.07   -    
-coxboost 0.86 0.37   0.12   1.00 </code></pre>
+<pre><code>         cox   glmnet ranger aorsf
+glmnet   0.855 -      -      -    
+ranger   0.180 0.751  -      -    
+aorsf    0.931 0.373  0.023  -    
+coxboost 0.995 0.628  0.070  0.995</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
@@ -1812,7 +1806,7 @@ P value adjustment method: single-step</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb123"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bma, <span class="at">type =</span> <span class="st">"cd"</span>, <span class="at">meas =</span> <span class="st">"ibs"</span>, <span class="at">ratio =</span> .<span class="dv">7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb122"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(bma, <span class="at">type =</span> <span class="st">"cd"</span>, <span class="at">meas =</span> <span class="st">"ibs"</span>, <span class="at">ratio =</span> .<span class="dv">7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in geom_segment(aes(x = 0, xend = max(rank) + 1, y = 0, yend = 0)): All aesthetics have length 1, but the data has 5 rows.
@@ -1838,7 +1832,7 @@ P value adjustment method: single-step</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb125"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a>sessioninfo<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a>sessioninfo<span class="sc">::</span><span class="fu">session_info</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>─ Session info ───────────────────────────────────────────────────────────────

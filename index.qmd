@@ -336,7 +336,7 @@ To speed things up a little, we let learners use 4 parallel threads (`num.thread
 :::
 
 ```{r lrns-init}
-lrn_glmnet = lrn("surv.cv_glmnet", alpha = 0.5)
+lrn_glmnet = lrn("surv.cv_glmnet", alpha = 0.5, s = "lambda.min")
 lrn_coxboost = lrn("surv.coxboost", penalty = 100)
 lrn_ranger = lrn("surv.ranger", num.trees = 100, num.threads = 4)
 lrn_aorsf = lrn("surv.aorsf", n_tree = 100, n_thread = 4)
@@ -359,9 +359,6 @@ rr_glmnet = resample(
 
 rr_glmnet$score(measures)
 ```
-
-Well, looks like `glmnet` out of the box does not do well on this dataset, judging by the C-index of 0.5.
-This is what the null model achieves, after all!
 
 Feel free to play with the parameters of `glmnet` a bit more --- for example, does changing `alpha` help?
 
@@ -414,7 +411,7 @@ Without going into too much detail about the theory, for tuning we need:
 
 ```{r glmnet-autotune}
 at_glmnet = auto_tuner(
-  learner = lrn("surv.cv_glmnet", alpha = to_tune(0, 1)),
+  learner = lrn("surv.cv_glmnet", alpha = to_tune(0, 1), s = "lambda.min"),
   tuner = tnr("grid_search"),
   resampling = rsmp("cv", folds = 3),
   measure = msr("surv.cindex"),
@@ -445,7 +442,7 @@ We start by first defining our learners with tuning, using `cv_coxboost` to tune
 
 ```{r}
 at_glmnet = auto_tuner(
-  learner = lrn("surv.cv_glmnet", alpha = to_tune(0, 1)),
+  learner = lrn("surv.cv_glmnet", alpha = to_tune(0, 1), s = "lambda.min"),
   tuner = tnr("grid_search"),
   resampling = rsmp("cv", folds = 3),
   measure = msr("surv.cindex"),
